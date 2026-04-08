@@ -1,0 +1,8 @@
+body, html, #root {
+  height: 100%;
+  background: #f9fafb;
+}
+.css-16iolqj-MuiButtonBase-root-MuiTab-root.Mui-selected {
+  color: #9766ff !important;
+}
+

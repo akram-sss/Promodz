@@ -1,0 +1,136 @@
+/* AccountSettings.css — scoped under .account-settings */
+
+.account-settings {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 30px;
+  background-color: #ffffff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #222;
+  box-sizing: border-box;
+}
+
+.account-settings .profile-header {
+  text-align: center;
+  padding: 20px;
+}
+
+.account-settings .profile-header .logo {
+  height: 80px;
+  object-fit: contain;
+}
+
+.account-settings h2 {
+  font-size: 2rem;
+  margin: 10px 0 5px;
+  font-weight: bold;
+}
+
+.account-settings p {
+  margin: 5px 0;
+  color: #555;
+}
+
+.account-settings h3,
+.account-settings h4 {
+  margin-top: 30px;
+  margin-bottom: 15px;
+  color: #5b008f;
+  font-weight: bold;
+}
+
+.account-settings form label {
+  display: block;
+  margin-bottom: 15px;
+  font-weight: 500;
+  color: #333;
+}
+
+.account-settings input[type="text"],
+.account-settings input[type="email"],
+.account-settings input[type="tel"] {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: #fff;
+  color: #000;
+  box-sizing: border-box;
+}
+
+.account-settings input[type="checkbox"] {
+  margin-right: 10px;
+  transform: scale(1.2);
+  accent-color: #7b2cbf;
+}
+
+.account-settings .preferences {
+  margin-bottom: 30px;
+}
+
+.account-settings .preferences label {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.account-settings .form-buttons {
+  margin-top: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.account-settings .save-button {
+  padding: 10px 20px;
+  background: #7b2cbf;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.account-settings .cancel-button {
+  padding: 10px 20px;
+  border: 1px solid #ccc;
+  background: white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+/* ── Tablet ── */
+@media (max-width: 768px) {
+  .account-settings {
+    padding: 20px 16px;
+  }
+  .account-settings h2 {
+    font-size: 1.5rem;
+  }
+  .account-settings h3,
+  .account-settings h4 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+  }
+  .account-settings .save-button,
+  .account-settings .cancel-button {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* ── Small phone ── */
+@media (max-width: 480px) {
+  .account-settings {
+    padding: 12px 10px;
+  }
+  .account-settings h2 {
+    font-size: 1.3rem;
+  }
+  .account-settings input[type="text"],
+  .account-settings input[type="email"],
+  .account-settings input[type="tel"] {
+    padding: 8px;
+    font-size: 0.95rem;
+  }
+}

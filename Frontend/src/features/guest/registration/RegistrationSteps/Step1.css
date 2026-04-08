@@ -1,0 +1,253 @@
+.step1-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.input-group {
+  margin-bottom: 1.5rem;
+}
+
+.input-group label {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #2D264B;
+  margin-bottom: 0.5rem;
+}
+
+.step1-input {
+  width: 100%;
+  padding: 0.95rem 1.2rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  font-size: 1rem;
+  background: #f8f9fa;
+  color: #333;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.step1-input:focus {
+  outline: none;
+  border-color: #7C3AED;
+  background: white;
+  box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
+  transform: translateY(-2px);
+}
+
+.step1-input.error {
+  border-color: #DC2626;
+  background: #FEF2F2;
+}
+
+.step1-input.error:focus {
+  border-color: #DC2626;
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.1);
+}
+
+.step1-input.success {
+  border-color: #22C55E;
+}
+
+.step1-input.success:focus {
+  border-color: #22C55E;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
+}
+
+.username-input-wrapper {
+  position: relative;
+}
+
+.username-input-wrapper .step1-input {
+  padding-right: 3rem;
+}
+
+.username-status {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.small-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(124, 58, 237, 0.3);
+  border-top-color: #7C3AED;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error-text {
+  display: block;
+  font-size: 0.85rem;
+  color: #DC2626;
+  margin-top: 0.4rem;
+  animation: slideDown 0.3s ease-out;
+}
+
+.success-text {
+  display: block;
+  font-size: 0.85rem;
+  color: #22C55E;
+  margin-top: 0.4rem;
+  font-weight: 500;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.step1-phone-row {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.step1-flag {
+  font-size: 1.1rem;
+  padding: 0.95rem 1rem;
+  background: #f8f9fa;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-weight: 600;
+  color: #2D264B;
+  white-space: nowrap;
+}
+
+.step1-input.phone {
+  flex: 1;
+}
+
+.password-input-wrapper {
+  position: relative;
+}
+
+.password-input-wrapper .step1-input {
+  padding-right: 3rem;
+}
+
+.toggle-password-btn {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+  z-index: 1;
+}
+
+.password-match-icon {
+  position: absolute;
+  right: 3.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.toggle-password-btn:hover {
+  transform: translateY(-50%) scale(1.1);
+}
+
+.step1-terms-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+.step1-terms-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  margin-top: 0.15rem;
+  accent-color: #7C3AED;
+  flex-shrink: 0;
+}
+
+.step1-terms-row label {
+  cursor: pointer;
+  line-height: 1.5;
+  user-select: none;
+}
+
+.step1-terms-row a {
+  color: #7C3AED;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.step1-terms-row a:hover {
+  color: #6024C8;
+  text-decoration: underline;
+}
+
+.step1-signup-btn {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, #7C3AED 0%, #6024C8 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 1.05rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+}
+
+.step1-signup-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #6024C8 0%, #5020A8 100%);
+  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+  transform: translateY(-2px);
+}
+
+.step1-signup-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(124, 58, 237, 0.3);
+}
+
+.step1-signup-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+  .step1-flag {
+    font-size: 0.9rem;
+    padding: 0.85rem 0.8rem;
+  }
+}

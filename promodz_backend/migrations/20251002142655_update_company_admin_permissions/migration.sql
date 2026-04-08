@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "CompanyAdmin" ADD COLUMN     "canDelete" BOOLEAN NOT NULL DEFAULT true,
+ADD COLUMN     "canEdit" BOOLEAN NOT NULL DEFAULT true,
+ADD COLUMN     "canViews" BOOLEAN NOT NULL DEFAULT true;

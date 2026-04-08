@@ -1,0 +1,328 @@
+import { PrismaClient } from "@prisma/client";
+import { subDays, subWeeks, subMonths, startOfMonth, endOfMonth, format } from "date-fns";
+const prisma = new PrismaClient();
+
+export const getMostClickedCompanies = async (req, res) => {
+  const { period = "week" } = req.query;
+
+  let days;
+  switch (period) {
+    case "day":
+      days = 1;
+      break;
+    case "month":
+      days = 30;
+      break;
+    case "week":
+    default:
+      days = 7;
+      break;
+  }
+
+  const since = subDays(new Date(), days);
+
+  try {
+    const grouped = await prisma.companyClick.groupBy({
+      by: ["companyId"],
+      where: {
+        createdAt: {
+          gte: since,
+        },
+      },
+      _count: {
+        companyId: true,
+      },
+      orderBy: {
+        _count: {
+          companyId: "desc",
+        },
+      },
+    });
+
+    const result = await Promise.all(
+      grouped.map(async (entry) => {
+        const company = await prisma.user.findUnique({
+          where: { id: entry.companyId },
+        });
+
+        return {
+          companyId: entry.companyId,
+          companyName: company?.fullName || "Unknown",
+          totalClicks: entry._count.companyId,
+        };
+      })
+    );
+
+    res.json(result);
+  } catch (error) {
+    console.error("Error fetching most clicked companies:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+export const getMostClickedProducts = async (req, res) => {
+  const { period = "week" } = req.query;
+
+  let days = 7;
+  if (period === "day") days = 1;
+  else if (period === "month") days = 30;
+
+  const since = subDays(new Date(), days);
+
+  try {
+    const grouped = await prisma.productClick.groupBy({
+      by: ["productId"],
+      where: {
+        createdAt: {
+          gte: since,
+        },
+      },
+      _count: {
+        productId: true,
+      },
+      orderBy: {
+        _count: {
+          productId: "desc",
+        },
+      },
+    });
+
+    const now = new Date();
+
+    const result = await Promise.all(
+      grouped.map(async (entry) => {
+        const product = await prisma.product.findFirst({
+          where: {
+            id: entry.productId,
+            OR: [
+              { expiresAt: null }, // no expiry
+              { expiresAt: { gt: now } }, // still active
+            ],
+          },
+          include: {
+            company: {
+              select: {
+                fullName: true,
+              },
+            },
+          },
+        });
+
+        if (!product) return null; // expired product → skip
+
+        return {
+          productId: entry.productId,
+          productName: product.name,
+          companyName: product.company?.fullName || "Unknown",
+          totalClicks: entry._count.productId,
+        };
+      })
+    );
+
+    res.json(result.filter(Boolean)); // remove nulls
+  } catch (error) {
+    console.error("Error fetching most clicked products:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+export const getMonthlyCityStats = async (req, res) => {
+  try {
+    const start = startOfMonth(new Date());
+    const stats = await prisma.userActivity.groupBy({
+      by: ["city"],
+      where: { createdAt: { gte: start } },
+      _count: { city: true },
+    });
+
+    res.json(stats.map(s => ({
+      city: s.city || "Unknown",
+      count: s._count.city,
+    })));
+  } catch (err) {
+    console.error("Error fetching city stats:", err);
+    res.status(500).json({ error: "Failed to fetch monthly city stats" });
+  }
+};
+
+export const getMonthlyDeviceStats = async (req, res) => {
+  try {
+    const since = startOfMonth(new Date());
+
+    const grouped = await prisma.userActivity.groupBy({
+      by: ["deviceType"],
+      where: { createdAt: { gte: since } },
+      _count: { deviceType: true },
+    });
+
+    res.json(grouped.map(g => ({
+      device: g.deviceType || "Unknown",
+      count: g._count.deviceType,
+    })));
+  } catch (err) {
+    console.error("Error fetching monthly device stats:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+// GET /api/analytics/promotion-performance - Clicks per day for last N days
+// Accessible by SUPER_ADMIN (all), ADMIN (assigned companies), ENTREPRISE (own)
+export const getPromotionPerformance = async (req, res) => {
+  try {
+    const { days = 30 } = req.query;
+    const user = req.user;
+    const since = subDays(new Date(), parseInt(days));
+
+    // Build company filter based on role
+    let companyFilter = {};
+    if (user.role === "ENTREPRISE") {
+      companyFilter = { companyId: user.id };
+    } else if (user.role === "ADMIN") {
+      const assignments = await prisma.companyAdmin.findMany({
+        where: { adminId: user.id },
+        select: { companyId: true },
+      });
+      const companyIds = assignments.map((a) => a.companyId);
+      companyFilter = { companyId: { in: companyIds } };
+    }
+    // SUPER_ADMIN: no filter (all products)
+
+    // Get product IDs for the filtered companies
+    const products = await prisma.product.findMany({
+      where: companyFilter,
+      select: { id: true },
+    });
+    const productIds = products.map((p) => p.id);
+
+    // Get clicks grouped by day
+    const clicks = await prisma.productClick.findMany({
+      where: {
+        productId: { in: productIds },
+        createdAt: { gte: since },
+      },
+      select: { createdAt: true },
+    });
+
+    // Group by day
+    const dailyMap = {};
+    for (let i = 0; i < parseInt(days); i++) {
+      const d = subDays(new Date(), i);
+      const key = format(d, "yyyy-MM-dd");
+      dailyMap[key] = 0;
+    }
+    for (const click of clicks) {
+      const key = format(click.createdAt, "yyyy-MM-dd");
+      if (dailyMap[key] !== undefined) {
+        dailyMap[key]++;
+      }
+    }
+
+    const result = Object.entries(dailyMap)
+      .map(([date, clicks]) => ({ date, clicks }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    res.json(result);
+  } catch (err) {
+    console.error("Error fetching promotion performance:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+// GET /api/analytics/company-city-stats - City stats scoped by role
+export const getCompanyCityStats = async (req, res) => {
+  try {
+    const user = req.user;
+    const since = startOfMonth(new Date());
+
+    // For company-specific role, filter by activities related to their products
+    // For now, global user activity is the only source
+    const stats = await prisma.userActivity.groupBy({
+      by: ["city"],
+      where: { createdAt: { gte: since } },
+      _count: { city: true },
+    });
+
+    res.json(
+      stats
+        .filter((s) => s.city)
+        .map((s) => ({
+          city: s.city,
+          count: s._count.city,
+        }))
+    );
+  } catch (err) {
+    console.error("Error fetching company city stats:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+// GET /api/analytics/company-device-stats - Device stats scoped by role
+export const getCompanyDeviceStats = async (req, res) => {
+  try {
+    const since = startOfMonth(new Date());
+
+    const grouped = await prisma.userActivity.groupBy({
+      by: ["deviceType"],
+      where: { createdAt: { gte: since } },
+      _count: { deviceType: true },
+    });
+
+    res.json(
+      grouped
+        .filter((g) => g.deviceType)
+        .map((g) => ({
+          device: g.deviceType,
+          count: g._count.deviceType,
+        }))
+    );
+  } catch (err) {
+    console.error("Error fetching company device stats:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+// GET /api/analytics/overview-stats - Stats scoped by role (for moderator/company)
+export const getOverviewStats = async (req, res) => {
+  try {
+    const user = req.user;
+    let stats = {};
+
+    if (user.role === "SUPER_ADMIN") {
+      const [users, admins, companies, superAdmins, totalProducts, activeProducts] = await Promise.all([
+        prisma.user.count({ where: { role: "USER" } }),
+        prisma.user.count({ where: { role: "ADMIN" } }),
+        prisma.user.count({ where: { role: "ENTREPRISE" } }),
+        prisma.user.count({ where: { role: "SUPER_ADMIN" } }),
+        prisma.product.count(),
+        prisma.product.count({ where: { status: "ACTIVE" } }),
+      ]);
+      stats = { users, admins, companies, superAdmins, totalProducts, activeProducts };
+    } else if (user.role === "ADMIN") {
+      const assignments = await prisma.companyAdmin.findMany({
+        where: { adminId: user.id },
+        select: { companyId: true },
+      });
+      const companyIds = assignments.map((a) => a.companyId);
+      const [assignedCompanies, totalProducts, activeProducts, deletedProducts] = await Promise.all([
+        Promise.resolve(companyIds.length),
+        prisma.product.count({ where: { companyId: { in: companyIds } } }),
+        prisma.product.count({ where: { companyId: { in: companyIds }, status: "ACTIVE" } }),
+        prisma.product.count({ where: { companyId: { in: companyIds }, status: "DELETED" } }),
+      ]);
+      stats = { assignedCompanies, totalProducts, activeProducts, deletedProducts };
+    } else if (user.role === "ENTREPRISE") {
+      const [totalProducts, activeProducts, expiredProducts, deletedProducts, followers, totalClicks] = await Promise.all([
+        prisma.product.count({ where: { companyId: user.id } }),
+        prisma.product.count({ where: { companyId: user.id, status: "ACTIVE" } }),
+        prisma.product.count({ where: { companyId: user.id, status: "EXPIRED" } }),
+        prisma.product.count({ where: { companyId: user.id, status: "DELETED" } }),
+        prisma.companyFollow.count({ where: { companyId: user.id } }),
+        prisma.companyClick.count({ where: { companyId: user.id } }),
+      ]);
+      stats = { totalProducts, activeProducts, expiredProducts, deletedProducts, followers, totalClicks };
+    }
+
+    res.json(stats);
+  } catch (err) {
+    console.error("Error fetching overview stats:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};

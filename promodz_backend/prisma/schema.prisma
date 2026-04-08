@@ -1,0 +1,372 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                     String               @id @default(cuid())
+  email                  String               @unique
+  username               String               @unique
+  fullName               String
+  phoneNumber            String
+  password               String
+  role                   Role                 @default(USER)
+  active                 Boolean              @default(false)
+  verified               Boolean              @default(false)
+  verificationCode       String?
+  verificationCodeExpiry DateTime?
+  verificationDate       DateTime?
+  createdAt              DateTime             @default(now())
+  lastSeen               DateTime?
+  online                 Boolean              @default(false)
+  isBanned               Boolean              @default(false)
+  isDeleted              Boolean              @default(false)
+  deletedAt              DateTime?
+  deletedById            String?
+  image                  String?
+  website                String?
+  handle                 String?
+  companyName            String?
+  address                String?
+  rc                     String?
+  city                   String?
+  postalCode             String?
+  description            String?
+  country                String?
+  totalProducts          Int                  @default(0)
+  totalFollowers         Int                  @default(0)
+  totalClicks            Int                  @default(0)
+  deletedBy              User?                @relation("UserDeletedBy", fields: [deletedById], references: [id])
+  deletedUsers           User[]               @relation("UserDeletedBy")
+  companiesManaged       CompanyAdmin[]       @relation("AdminUser")
+  adminsAssigned         CompanyAdmin[]       @relation("CompanyUser")
+  companyClicks          CompanyClick[]       @relation("CompanyClickRelation")
+  companyClicksByUser    CompanyClick[]       @relation("CompanyClickUserRelation")
+  followers              CompanyFollow[]      @relation("CompanyFollowRelation")
+  companiesFollowed      CompanyFollow[]      @relation("UserFollowRelation")
+  productsAsCompany      Product[]            @relation("Company")
+  productsCreated        Product[]            @relation("Creator")
+  deletedProducts        Product[]            @relation("DeletedByUser")
+  productFavorites       ProductFavorite[]
+  productRatings         ProductRating[]
+  productClicks          ProductClick[]       @relation("ProductClickUserRelation")
+  productEdits           ProductEditHistory[]
+  activities             UserActivity[]
+  subscription           Subscription?        @relation("CompanySubscription")
+  adsCreated             Ad[]                 @relation("AdCreatedBy")
+  feedbacks              Feedback[]
+  topCompanies           TopCompany[]         @relation("TopCompanyRelation")
+  notifications          Notification[]       @relation("NotificationUser")
+  searchHistory          SearchHistory[]
+  invoices               Invoice[]            @relation("UserInvoices")
+  supportTicketsAsUser   SupportTicket[]      @relation("SupportTicketUser")
+  supportTicketsAsCompany SupportTicket[]     @relation("SupportTicketCompany")
+}
+
+model Product {
+  id             String               @id @default(cuid())
+  name           String
+  description    String?
+  price          Float
+  discount       Float                @default(0)
+  link           String?
+  images         String[]             @default([])
+  createdAt      DateTime             @default(now())
+  startDate      DateTime?
+  expiresAt      DateTime?
+  status         ProductStatus        @default(ACTIVE)
+  isDeleted      Boolean              @default(false)
+  companyId      String
+  createdById    String
+  deletedById    String?
+  categoryId     String?
+  subCategoryId  String?
+  subCategoryIds String[]             @default([])
+  category       Category?            @relation(fields: [categoryId], references: [id])
+  company        User                 @relation("Company", fields: [companyId], references: [id])
+  createdBy      User                 @relation("Creator", fields: [createdById], references: [id])
+  deletedBy      User?                @relation("DeletedByUser", fields: [deletedById], references: [id])
+  subCategory    SubCategory?         @relation(fields: [subCategoryId], references: [id])
+  clicks         ProductClick[]
+  favorites      ProductFavorite[]
+  ratings        ProductRating[]
+  feedbacks      Feedback[]
+  editHistory    ProductEditHistory[]
+}
+
+model Category {
+  id            String        @id @default(cuid())
+  name          String        @unique
+  image         String?
+  products      Product[]
+  subCategories SubCategory[]
+}
+
+model SubCategory {
+  id         String    @id @default(cuid())
+  name       String
+  image      String?
+  categoryId String
+  products   Product[]
+  category   Category  @relation(fields: [categoryId], references: [id])
+
+  @@unique([name, categoryId])
+}
+
+model ProductClick {
+  id        String   @id @default(cuid())
+  productId String
+  userId    String?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id])
+  user      User?    @relation("ProductClickUserRelation", fields: [userId], references: [id])
+}
+
+model CompanyClick {
+  id        String   @id @default(cuid())
+  companyId String
+  userId    String?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  company   User     @relation("CompanyClickRelation", fields: [companyId], references: [id])
+  user      User?    @relation("CompanyClickUserRelation", fields: [userId], references: [id])
+}
+
+model CompanyAdmin {
+  id        String  @id @default(cuid())
+  adminId   String
+  companyId String
+  canDelete Boolean @default(true)
+  canEdit   Boolean @default(true)
+  canViews  Boolean @default(true)
+  canAdd    Boolean @default(false)
+  admin     User    @relation("AdminUser", fields: [adminId], references: [id])
+  company   User    @relation("CompanyUser", fields: [companyId], references: [id])
+}
+
+model ProductFavorite {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, productId])
+}
+
+model ProductRating {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  rating    Int?
+  createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, productId])
+}
+
+model CompanyFollow {
+  id        String   @id @default(cuid())
+  userId    String
+  companyId String
+  createdAt DateTime @default(now())
+  company   User     @relation("CompanyFollowRelation", fields: [companyId], references: [id])
+  user      User     @relation("UserFollowRelation", fields: [userId], references: [id])
+
+  @@unique([userId, companyId])
+}
+
+model UserActivity {
+  id         String     @id @default(cuid())
+  userId     String?
+  city       String?
+  country    String?
+  ipAddress  String?
+  createdAt  DateTime   @default(now())
+  action     String
+  browser    String?
+  deviceType DeviceType?
+  os         String?
+  user       User?      @relation(fields: [userId], references: [id])
+}
+
+model Subscription {
+  id              String                @id @default(cuid())
+  companyId       String                @unique
+  plan            String
+  status          String                @default("ACTIVE")
+  startDate       DateTime
+  endDate         DateTime
+  price           Float
+  autoRenew       Boolean               @default(true)
+  nextBillingDate DateTime?
+  paymentMethod   String?
+  lastPaymentDate DateTime?
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  company         User                  @relation("CompanySubscription", fields: [companyId], references: [id])
+  features        SubscriptionFeature[]
+  invoices        Invoice[]
+}
+
+model Feature {
+  id           String                @id @default(cuid())
+  name         String                @unique
+  description  String?
+  type         String?
+  defaultValue String?
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+  subscriptions SubscriptionFeature[]
+}
+
+model SubscriptionFeature {
+  id             String        @id @default(cuid())
+  subscriptionId String
+  featureId      String
+  isActive       Boolean       @default(true)
+  value          String?
+  createdAt      DateTime      @default(now())
+  subscription   Subscription  @relation(fields: [subscriptionId], references: [id])
+  feature        Feature       @relation(fields: [featureId], references: [id])
+
+  @@unique([subscriptionId, featureId])
+}
+
+model Invoice {
+  id             String        @id @default(cuid())
+  subscriptionId String
+  userId         String?
+  amount         Float
+  invoiceNumber  String        @unique
+  status         String        @default("PENDING")
+  dueDate        DateTime
+  paidAt         DateTime?
+  createdAt      DateTime      @default(now())
+  subscription   Subscription  @relation(fields: [subscriptionId], references: [id])
+  user           User?         @relation("UserInvoices", fields: [userId], references: [id])
+}
+
+model Ad {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  link        String?
+  imageUrl    String?
+  position    String
+  isActive    Boolean  @default(true)
+  clicks      Int      @default(0)
+  expiresAt   DateTime?
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   User     @relation("AdCreatedBy", fields: [createdById], references: [id])
+}
+
+model Feedback {
+  id         String    @id @default(cuid())
+  message    String
+  type       String    @default("general")
+  status     String    @default("pending")
+  fullName   String?
+  email      String?
+  senderRole String?
+  userId     String?
+  productId  String?
+  createdAt  DateTime  @default(now())
+  user       User?     @relation(fields: [userId], references: [id])
+  product    Product?  @relation(fields: [productId], references: [id])
+}
+
+model LegalSection {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  position    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model TopCompany {
+  id          String   @id @default(cuid())
+  companyId   String
+  name        String
+  text        String?
+  logo        String?
+  image       String?
+  companyLink String?
+  position    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  company     User     @relation("TopCompanyRelation", fields: [companyId], references: [id])
+}
+
+model SearchHistory {
+  id        String   @id @default(cuid())
+  userId    String
+  query     String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model ProductEditHistory {
+  id        String   @id @default(cuid())
+  productId String
+  userId    String
+  createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation("NotificationUser", fields: [userId], references: [id])
+}
+
+model SupportTicket {
+  id        String   @id @default(cuid())
+  userId    String?
+  companyId String?
+  subject   String?
+  message   String?
+  status    String   @default("open")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User?    @relation("SupportTicketUser", fields: [userId], references: [id])
+  company   User?    @relation("SupportTicketCompany", fields: [companyId], references: [id])
+}
+
+enum Role {
+  USER
+  ADMIN
+  SUPER_ADMIN
+  ENTREPRISE
+}
+
+enum ProductStatus {
+  ACTIVE
+  EXPIRED
+  DELETED
+}
+
+enum DeviceType {
+  MOBILE
+  DESKTOP
+  TABLET
+  OTHER
+}

@@ -1,0 +1,590 @@
+/* ===========================
+   Work With Us Page
+   =========================== */
+
+.workwithus-page {
+  min-height: 100vh;
+  background: #f8f7ff;
+  overflow-x: hidden;
+}
+
+/* ---- Hero ---- */
+.wwu-hero {
+  position: relative;
+  background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 40%, #7c3aed 100%);
+  padding: 80px 5% 60px;
+  overflow: hidden;
+}
+
+.wwu-hero-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.wwu-circle {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.12;
+  background: #fff;
+}
+
+.wwu-circle-1 {
+  width: 350px;
+  height: 350px;
+  top: -80px;
+  right: -60px;
+}
+
+.wwu-circle-2 {
+  width: 200px;
+  height: 200px;
+  bottom: -40px;
+  left: 10%;
+}
+
+.wwu-circle-3 {
+  width: 120px;
+  height: 120px;
+  top: 40%;
+  right: 30%;
+}
+
+.wwu-hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 60px;
+}
+
+.wwu-hero-text {
+  flex: 1;
+}
+
+.wwu-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 1.5px;
+  padding: 8px 18px;
+  border-radius: 50px;
+  margin-bottom: 24px;
+}
+
+.wwu-badge-icon {
+  font-size: 1.1rem;
+}
+
+.wwu-hero-title {
+  color: #fff;
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 800;
+  line-height: 1.15;
+  margin: 0 0 18px;
+}
+
+.wwu-highlight {
+  color: #fde68a;
+}
+
+.wwu-hero-subtitle {
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 1.1rem;
+  line-height: 1.7;
+  max-width: 520px;
+  margin: 0 0 20px;
+}
+
+.wwu-hero-notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(253, 230, 138, 0.18);
+  border: 1px solid rgba(253, 230, 138, 0.4);
+  border-radius: 12px;
+  padding: 12px 18px;
+  margin-bottom: 28px;
+  max-width: 520px;
+}
+
+.wwu-hero-notice svg {
+  color: #fde68a;
+  flex-shrink: 0;
+}
+
+.wwu-hero-notice span {
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.wwu-hero-actions {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.wwu-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #fde68a;
+  color: #4c1d95;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 14px 28px;
+  border-radius: 50px;
+  border: none;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.wwu-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
+}
+
+.wwu-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 14px 28px;
+  border-radius: 50px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.wwu-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #fff;
+}
+
+.wwu-hero-logo {
+  flex-shrink: 0;
+}
+
+.wwu-logo-card {
+  background: #fff;
+  border-radius: 24px;
+  padding: 36px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+  text-align: center;
+  width: 260px;
+}
+
+.wwu-logo-card img {
+  width: 180px;
+  height: auto;
+  margin-bottom: 14px;
+}
+
+.wwu-logo-tagline {
+  color: #7c3aed;
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+/* ---- Stats ---- */
+.wwu-stats {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  max-width: 1000px;
+  margin: -30px auto 0;
+  padding: 0 5%;
+  position: relative;
+  z-index: 3;
+}
+
+.wwu-stat-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px 32px;
+  text-align: center;
+  box-shadow: 0 8px 30px rgba(139, 92, 246, 0.1);
+  flex: 1;
+  min-width: 160px;
+  transition: transform 0.2s;
+}
+
+.wwu-stat-card:hover {
+  transform: translateY(-4px);
+}
+
+.wwu-stat-number {
+  display: block;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #7c3aed;
+  line-height: 1.2;
+}
+
+.wwu-stat-label {
+  display: block;
+  color: #64748b;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+/* ---- Benefits ---- */
+.wwu-benefits {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 80px 5% 60px;
+}
+
+.wwu-section-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.wwu-section-title {
+  font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+  font-weight: 800;
+  color: #1e1b4b;
+  margin: 0 0 12px;
+}
+
+.wwu-section-subtitle {
+  color: #64748b;
+  font-size: 1.05rem;
+  margin: 0;
+}
+
+.wwu-benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.wwu-benefit-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 32px 28px;
+  box-shadow: 0 4px 20px rgba(139, 92, 246, 0.06);
+  border: 1px solid #f0ecff;
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+
+.wwu-benefit-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 36px rgba(139, 92, 246, 0.12);
+}
+
+.wwu-benefit-icon {
+  font-size: 2.4rem;
+  margin-bottom: 16px;
+}
+
+.wwu-benefit-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1e1b4b;
+  margin: 0 0 10px;
+}
+
+.wwu-benefit-desc {
+  color: #6b7280;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ---- Steps ---- */
+.wwu-steps {
+  background: linear-gradient(180deg, #f3efff 0%, #f8f7ff 100%);
+  padding: 80px 5% 60px;
+}
+
+.wwu-steps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 32px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.wwu-step-card {
+  position: relative;
+  text-align: center;
+  padding: 24px 16px;
+}
+
+.wwu-step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: #fff;
+  font-weight: 800;
+  font-size: 1.2rem;
+  border-radius: 50%;
+  margin-bottom: 18px;
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.3);
+}
+
+.wwu-step-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1e1b4b;
+  margin: 0 0 10px;
+}
+
+.wwu-step-desc {
+  color: #6b7280;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.wwu-step-connector {
+  display: none;
+}
+
+/* ---- Contact / CTA ---- */
+.wwu-contact {
+  position: relative;
+  background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 50%, #a78bfa 100%);
+  padding: 80px 5%;
+  overflow: hidden;
+}
+
+.wwu-contact-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.wwu-circle-4 {
+  width: 280px;
+  height: 280px;
+  bottom: -60px;
+  right: -40px;
+}
+
+.wwu-circle-5 {
+  width: 180px;
+  height: 180px;
+  top: -40px;
+  left: 15%;
+}
+
+.wwu-contact-content {
+  position: relative;
+  z-index: 2;
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.wwu-contact-title {
+  color: #fff;
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  font-weight: 800;
+  margin: 0 0 12px;
+}
+
+.wwu-contact-subtitle {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 1.1rem;
+  margin: 0 0 40px;
+}
+
+.wwu-contact-cards {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 40px;
+}
+
+.wwu-contact-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  padding: 20px 28px;
+  text-decoration: none;
+  color: #fff;
+  min-width: 240px;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.wwu-contact-card:hover {
+  transform: translateY(-3px);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.wwu-contact-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.wwu-contact-icon-phone {
+  background: linear-gradient(135deg, #ef4444, #f87171);
+}
+
+.wwu-contact-icon-email {
+  background: linear-gradient(135deg, #f59e0b, #fbbf24);
+}
+
+.wwu-contact-icon-web {
+  background: linear-gradient(135deg, #06b6d4, #22d3ee);
+}
+
+.wwu-contact-info {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.wwu-contact-label {
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 1.2px;
+  opacity: 0.8;
+  margin-bottom: 4px;
+}
+
+.wwu-contact-value {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.wwu-cta-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.wwu-btn-lg {
+  font-size: 1.1rem;
+  padding: 16px 36px;
+}
+
+.wwu-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  color: #fff;
+  font-weight: 600;
+  font-size: 1.1rem;
+  padding: 16px 36px;
+  border-radius: 50px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.wwu-btn-outline:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #fff;
+}
+
+/* ===========================
+   Responsive
+   =========================== */
+@media (max-width: 900px) {
+  .wwu-hero-content {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .wwu-hero-subtitle {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .wwu-hero-actions {
+    justify-content: center;
+  }
+
+  .wwu-logo-card {
+    width: 200px;
+    padding: 24px;
+  }
+
+  .wwu-logo-card img {
+    width: 140px;
+  }
+
+  .wwu-stats {
+    margin-top: -20px;
+  }
+}
+
+@media (max-width: 640px) {
+  .wwu-hero {
+    padding: 60px 5% 40px;
+  }
+
+  .wwu-stat-card {
+    padding: 18px 20px;
+    min-width: 130px;
+  }
+
+  .wwu-stat-number {
+    font-size: 1.4rem;
+  }
+
+  .wwu-benefits-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .wwu-steps-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .wwu-contact-card {
+    min-width: 100%;
+    padding: 16px 20px;
+  }
+
+  .wwu-btn-primary,
+  .wwu-btn-secondary,
+  .wwu-btn-outline {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .wwu-cta-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+}

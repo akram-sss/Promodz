@@ -1,0 +1,488 @@
+import './OverviewDachAdmin.css';
+import OverviewCards from '../Components/cards/OverviewCards';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import { Typography, styled, CircularProgress } from '@mui/material';
+import { alpha } from '@mui/material/styles';
+import AlgerMap from '@components/Map/AlgerMap';
+import { useOutletContext } from 'react-router-dom';
+import Button from '@mui/material/Button';
+import ButtonGroup from '@mui/material/ButtonGroup';
+import { analyticsAPI } from '@shared/api';
+
+const COLORS = ['#8B5CF6', '#6C28D9', '#4F46E5', '#7C3AED', '#9333EA'];
+const DEVICE_COLORS = ['#8B5CF6', '#6C28D9', '#4F46E5'];
+
+const primaryColor = '#8b5cf6';
+
+const SectionTitle = styled(Typography)(({ theme }) => ({
+  marginBottom: theme.spacing(3),
+  color: primaryColor,
+  fontWeight: 700,
+  letterSpacing: '0.5px',
+  position: 'relative',
+  '&:after': {
+    content: '""',
+    position: 'absolute',
+    bottom: -8,
+    left: 0,
+    width: 48,
+    height: 4,
+    backgroundColor: alpha(primaryColor, 0.5),
+    borderRadius: 2
+  }
+}));
+
+const StyledButtonGroup = styled(ButtonGroup)(({ theme }) => ({
+  margin: '20px 0',
+  display: 'flex',
+  boxShadow: 'none',
+  gap: '16px',
+  border:'none',
+  '& .MuiButton-root': {
+    textTransform: 'none',
+    fontWeight: 600,
+    borderRadius: '8px !important',
+    backgroundColor: primaryColor,
+    padding: '8px 24px',
+    transition: 'all 0.3s ease',
+    '&:not(.MuiButton-containedPrimary)': {
+      backgroundColor: theme.palette.grey[100],
+      color: primaryColor,
+      '&:hover': {
+        backgroundColor: theme.palette.grey[200]
+      }
+    }
+  }
+}));
+
+const PromoPerformanceChart = ({ dailyData, weeklyData, monthlyData }) => {
+  const [timeRange, setTimeRange] = useState('day');
+  
+  const getChartData = () => {
+    switch(timeRange) {
+      case 'day':
+        return dailyData;
+      case 'week':
+        return weeklyData;
+      case 'month':
+        return monthlyData;
+      default:
+        return dailyData;
+    }
+  };
+
+  return (
+    <div className="chart-box">
+      <div className="chart-header">
+        <div>
+          <SectionTitle variant="h5">Promotion Performance</SectionTitle>
+        </div>
+        <div className="time-range-selector">
+          <button 
+            className={timeRange === 'day' ? 'active' : ''} 
+            onClick={() => setTimeRange('day')}
+          >
+            Day
+          </button>
+          <button 
+            className={timeRange === 'week' ? 'active' : ''} 
+            onClick={() => setTimeRange('week')}
+          >
+            Week
+          </button>
+          <button 
+            className={timeRange === 'month' ? 'active' : ''} 
+            onClick={() => setTimeRange('month')}
+          >
+            Month
+          </button>
+        </div>
+      </div>
+      <ResponsiveContainer width="100%" height={250}>
+        <LineChart data={getChartData()} margin={{ top: 10, right: 0, bottom: 0, left: 0 }}>
+          <defs>
+            <linearGradient id="gradientPurple" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.2} />
+              <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <XAxis dataKey="name" axisLine={false} tickLine={false} />
+          <YAxis axisLine={false} tickLine={false} />
+          <Tooltip
+            contentStyle={{ 
+              backgroundColor: "#fff", 
+              borderRadius: 8, 
+              border: 'none', 
+              boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+              padding: '8px 12px'
+            }}
+            formatter={(value) => [`${value} visitors`, 'Visitors']}
+          />
+          <Line
+            type="monotone"
+            dataKey="visitors"
+            stroke="#8B5CF6"
+            strokeWidth={2}
+            dot={{ r: 3, fill: "#8B5CF6" }}
+            activeDot={{ r: 6, fill: "#8B5CF6" }}
+            fillOpacity={1}
+            fill="url(#gradientPurple)"
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
+const TopPromotionsChart = ({ weeklyPromoPerformance }) => {
+  if (!weeklyPromoPerformance || weeklyPromoPerformance.length === 0) {
+    return (
+      <div className="chart-box">
+        <div className="chart-header">
+          <SectionTitle variant="h5">Top Performing Promotions</SectionTitle>
+          <span className="chart-error">No data available</span>
+        </div>
+        <div className="chart-placeholder">
+          <Typography variant="body1" color="textSecondary">
+            No promotion data to display
+          </Typography>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="chart-box">
+      <div className="chart-header">
+        <div>
+          <SectionTitle variant="h5">Top Performing Promotions</SectionTitle>
+        </div>
+      </div>
+      <ResponsiveContainer width="100%" height={250}>
+        <BarChart data={weeklyPromoPerformance} barSize={28} barCategoryGap={18}>
+          <XAxis dataKey="name" axisLine={false} tickLine={false} />
+          <YAxis axisLine={false} tickLine={false} />
+          <Tooltip
+            contentStyle={{ 
+              backgroundColor: "#fff", 
+              borderRadius: 8, 
+              border: 'none', 
+              boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+              padding: '8px 12px'
+            }}
+            formatter={(value) => [`${value} clicks`, 'Clicks']}
+          />
+          <Bar dataKey="clicks" fill="#8B5CF6" radius={[8, 8, 0, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
+const AudienceDistribution = ({ cityDistribution, deviceData }) => {
+  const hasCityData = cityDistribution && cityDistribution.length > 0;
+  const hasDeviceData = deviceData && deviceData.length > 0;
+
+  return (
+    <div className="distribution-container">
+      <div className="chart-box">
+        <div className="chart-header">
+          <div>
+            <SectionTitle variant="h5">Audience by City</SectionTitle>
+            <span className="chart-count">
+              {hasCityData ? 'Top 5 cities' : 'No city data available'}
+            </span>
+          </div>
+        </div>
+        {hasCityData ? (
+          <ResponsiveContainer width="100%" height={250}>
+            <PieChart>
+              <Pie
+                data={cityDistribution}
+                cx="50%"
+                cy="50%"
+                innerRadius={60}
+                outerRadius={80}
+                fill="#8884d8"
+                paddingAngle={5}
+                dataKey="value"
+                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+              >
+                {cityDistribution.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip
+                contentStyle={{ 
+                  backgroundColor: "#fff", 
+                  borderRadius: 8, 
+                  border: 'none', 
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                  padding: '8px 12px'
+                }}
+                formatter={(value) => [`${value}% of traffic`, 'Share']}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="chart-placeholder">
+            <Typography variant="body1" color="textSecondary">
+              No city distribution data available
+            </Typography>
+          </div>
+        )}
+      </div>
+
+      <div className="chart-box">
+        <div className="chart-header">
+          <div>
+            <SectionTitle variant="h5">Device Distribution</SectionTitle>
+            <span className="chart-count">
+              {hasDeviceData ? 'Mobile dominant' : 'No device data available'}
+            </span>
+          </div>
+        </div>
+        {hasDeviceData ? (
+          <ResponsiveContainer width="100%" height={250}>
+            <PieChart>
+              <Pie
+                data={deviceData}
+                cx="50%"
+                cy="50%"
+                innerRadius={60}
+                outerRadius={80}
+                fill="#8884d8"
+                paddingAngle={5}
+                dataKey="value"
+                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+              >
+                {deviceData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={DEVICE_COLORS[index % DEVICE_COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip
+                contentStyle={{ 
+                  backgroundColor: "#fff", 
+                  borderRadius: 8, 
+                  border: 'none', 
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                  padding: '8px 12px'
+                }}
+                formatter={(value) => [`${value}% of traffic`, 'Share']}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="chart-placeholder">
+            <Typography variant="body1" color="textSecondary">
+              No device distribution data available
+            </Typography>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default function OverviewDachAdmin() {
+  const outletContext = useOutletContext();
+  const [activeMap, setActiveMap] = useState('visitor');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  // State for real data
+  const [adminCards, setAdminCards] = useState([]);
+  const [topProducts, setTopProducts] = useState([]);
+  const [cityDistribution, setCityDistribution] = useState([]);
+  const [deviceData, setDeviceData] = useState([]);
+  const [dailyData, setDailyData] = useState([]);
+  const [weeklyData, setWeeklyData] = useState([]);
+  const [monthlyData, setMonthlyData] = useState([]);
+  const [mapData, setMapData] = useState({});
+
+  useEffect(() => {
+    let mounted = true;
+
+    // ── Fast poll: overview stats (cards + online count) ──
+    const fetchOverview = async () => {
+      try {
+        const res = await analyticsAPI.getOverviewStats();
+        if (!mounted) return;
+        const s = res.data;
+        setAdminCards([
+          { title: 'Total Users', value: s.totalUsers || 0, change: 'Registered users' },
+          { title: 'Companies', value: s.companies || 0, change: 'Active companies' },
+          { title: 'Moderators', value: s.admins || 0, change: 'Assigned admins' },
+          { title: 'Active Products', value: s.activeProducts || 0, change: `of ${s.totalProducts || 0} total` },
+          { title: 'Total Visits', value: s.totalVisits || 0, change: `${s.todayVisits || 0} today` },
+          { title: 'Total Clicks', value: s.totalClicks || 0, change: `${s.totalProductClicks || 0} product clicks` },
+          { title: 'Monthly Visits', value: s.monthlyVisits || 0, change: 'This month' },
+          { title: 'Online Now', value: s.onlineUsers || 0, change: 'Active in last 5 min' },
+        ]);
+      } catch (e) { /* silent */ }
+    };
+
+    // ── Slow poll: charts, map, top products ──
+    const fetchCharts = async () => {
+      try {
+        const [productsRes, cityRes, deviceRes, perfRes, mapRes] = await Promise.allSettled([
+          analyticsAPI.getMostClickedProducts(),
+          analyticsAPI.getMonthlyCityStats(),
+          analyticsAPI.getMonthlyDeviceStats(),
+          analyticsAPI.getPromotionPerformance(30),
+          analyticsAPI.getMapData('visitor'),
+        ]);
+        if (!mounted) return;
+
+        if (productsRes.status === 'fulfilled') {
+          const products = productsRes.value.data || [];
+          setTopProducts(products.slice(0, 5).map(p => ({
+            name: (p.name || p.productName || 'Unknown').substring(0, 18),
+            clicks: p.clicks || p.totalClicks || 0,
+          })));
+        }
+
+        if (cityRes.status === 'fulfilled') {
+          const cities = cityRes.value.data || [];
+          const total = cities.reduce((sum, c) => sum + c.count, 0);
+          setCityDistribution(cities.slice(0, 5).map(c => ({
+            name: c.city,
+            value: total > 0 ? Math.round((c.count / total) * 100) : 0,
+          })));
+        }
+
+        if (deviceRes.status === 'fulfilled') {
+          const devices = deviceRes.value.data || [];
+          const total = devices.reduce((sum, d) => sum + d.count, 0);
+          setDeviceData(devices.map(d => ({
+            name: d.device || 'Unknown',
+            value: total > 0 ? Math.round((d.count / total) * 100) : 0,
+          })));
+        }
+
+        if (perfRes.status === 'fulfilled') {
+          const perfArr = perfRes.value.data || [];
+          const daily = perfArr.slice(-7).map(d => ({
+            name: new Date(d.date).toLocaleDateString('en', { weekday: 'short' }),
+            visitors: d.clicks || 0,
+          }));
+          const weekly = perfArr.slice(-28).reduce((acc, d, i) => {
+            const weekIdx = Math.floor(i / 7);
+            if (!acc[weekIdx]) acc[weekIdx] = { name: `W${weekIdx + 1}`, visitors: 0 };
+            acc[weekIdx].visitors += d.clicks || 0;
+            return acc;
+          }, []);
+          setDailyData(daily);
+          setWeeklyData(Array.isArray(weekly) ? weekly : []);
+          setMonthlyData(perfArr.map(d => ({
+            name: new Date(d.date).toLocaleDateString('en', { month: 'short', day: 'numeric' }),
+            visitors: d.clicks || 0,
+          })));
+        }
+
+        if (mapRes.status === 'fulfilled') {
+          setMapData(mapRes.value.data || {});
+        }
+      } catch (e) { /* silent */ }
+    };
+
+    // Initial load (with spinner)
+    const init = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        await Promise.all([fetchOverview(), fetchCharts()]);
+      } catch (err) {
+        if (mounted) setError('Failed to load dashboard data');
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    init();
+
+    // Polling: overview every 1s, charts every 30s
+    const overviewTimer = setInterval(fetchOverview, 1000);
+    const chartTimer = setInterval(fetchCharts, 30000);
+
+    return () => {
+      mounted = false;
+      clearInterval(overviewTimer);
+      clearInterval(chartTimer);
+    };
+  }, []);
+
+  // Re-fetch map data when toggle changes
+  useEffect(() => {
+    const fetchMap = async () => {
+      try {
+        const res = await analyticsAPI.getMapData(activeMap === 'visitor' ? 'visitor' : 'click');
+        setMapData(res.data || {});
+      } catch (err) {
+        console.error('Map data fetch error:', err);
+      }
+    };
+    fetchMap();
+  }, [activeMap]);
+
+  if (loading) {
+    return (
+      <div className="overview-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+        <CircularProgress sx={{ color: '#8b5cf6' }} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="error-container">
+        <Typography variant="h6" color="error">{error}</Typography>
+      </div>
+    );
+  }
+
+  return (
+    <div className="overview-container">
+      <SectionTitle variant="h4" sx={{ mt: 2 }}>Platform Analytics Dashboard</SectionTitle>
+      <p className="dashboard-subtitle">Complete overview of DZ Promo platform performance</p>
+      
+      <OverviewCards cards={adminCards}/>
+      
+      <div className="charts-container">
+        <PromoPerformanceChart 
+          dailyData={dailyData} 
+          weeklyData={weeklyData} 
+          monthlyData={monthlyData} 
+        />
+        <TopPromotionsChart weeklyPromoPerformance={topProducts}/>
+      </div>
+      
+      <AudienceDistribution cityDistribution={cityDistribution} deviceData={deviceData} />
+
+      {/* Map Toggle Buttons */}
+      <div style={{ display: 'flex', justifyContent: 'left' }}>
+        <StyledButtonGroup variant="contained" aria-label="Map type toggle">
+          <Button 
+            onClick={() => setActiveMap('visitor')}
+            color={activeMap === 'visitor' ? 'primary' : 'inherit'}
+          >
+            Visitor Map
+          </Button>
+          <Button 
+            onClick={() => setActiveMap('click')}
+            color={activeMap === 'click' ? 'primary' : 'inherit'}
+          >
+            Click Map
+          </Button>
+        </StyledButtonGroup>
+      </div>
+
+      {/* Map Component — wired with real geo data */}
+      <AlgerMap 
+        data={mapData} 
+        maptitle={activeMap === 'visitor' ? 'Visitor Distribution' : 'Click Distribution'} 
+        cardtitle={activeMap === 'visitor' ? 'Visitors' : 'Clicks'} 
+      />
+    </div>
+  );
+}

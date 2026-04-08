@@ -1,0 +1,19 @@
+.add-promotion-container{
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+    padding: 20px;
+    background-color: #ffffff;
+}
+
+.no-permission-message{
+    margin-top: 20px;
+    color: #5e3acb !important;
+    background-color: #ffffff !important;
+    font-weight: bold;
+    font-size: 30px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}

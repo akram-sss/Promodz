@@ -1,0 +1,213 @@
+/* DeletedPromotionTable.css - Modern Clean Design (Company) */
+
+/* ===== Table Container & Paper ===== */
+.MuiPaper-root {
+  border-radius: 16px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+  border: 1px solid #e8e8e8 !important;
+  overflow: hidden;
+}
+
+/* ===== Toolbar Styles ===== */
+.MuiToolbar-root {
+  padding: 20px 24px !important;
+  background: linear-gradient(135deg, #fafafa 0%, #ffffff 100%);
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* ===== Table Header ===== */
+.MuiTableHead-root {
+  background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%) !important;
+}
+
+.MuiTableHead-root .MuiTableCell-root {
+  font-weight: 700 !important;
+  font-size: 0.8rem !important;
+  color: #9f1239 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  padding: 16px 20px !important;
+  border-bottom: 2px solid #fecdd3 !important;
+  white-space: nowrap;
+}
+
+.MuiTableSortLabel-root {
+  color: #9f1239 !important;
+}
+
+.MuiTableSortLabel-root:hover {
+  color: #be123c !important;
+}
+
+.MuiTableSortLabel-root.Mui-active {
+  color: #be123c !important;
+}
+
+.MuiTableSortLabel-icon {
+  color: #be123c !important;
+  opacity: 1 !important;
+}
+
+/* ===== Table Body Rows ===== */
+.MuiTableBody-root .MuiTableRow-root {
+  transition: all 0.2s ease;
+}
+
+.MuiTableBody-root .MuiTableRow-root:hover {
+  background-color: #fff5f5 !important;
+}
+
+.MuiTableBody-root .MuiTableRow-root.Mui-selected {
+  background-color: #ffe4e6 !important;
+}
+
+.MuiTableBody-root .MuiTableRow-root.Mui-selected:hover {
+  background-color: #fecdd3 !important;
+}
+
+/* ===== Table Cells ===== */
+.MuiTableBody-root .MuiTableCell-root {
+  padding: 14px 20px !important;
+  font-size: 0.9rem !important;
+  color: #374151 !important;
+  border-bottom: 1px solid #f3f4f6 !important;
+  vertical-align: middle;
+}
+
+/* ===== Checkbox Styling ===== */
+.MuiCheckbox-root {
+  color: #fda4af !important;
+  padding: 8px !important;
+}
+
+.MuiCheckbox-root.Mui-checked {
+  color: #e11d48 !important;
+}
+
+.MuiCheckbox-root:hover {
+  background-color: rgba(225, 29, 72, 0.08) !important;
+}
+
+/* ===== Pagination ===== */
+.MuiTablePagination-root {
+  border-top: 1px solid #f0f0f0 !important;
+  background: #fafafa;
+  padding: 8px 16px !important;
+}
+
+.MuiTablePagination-selectLabel,
+.MuiTablePagination-displayedRows {
+  font-size: 0.875rem !important;
+  color: #6b7280 !important;
+}
+
+.MuiTablePagination-select {
+  border-radius: 8px !important;
+  padding: 6px 12px !important;
+}
+
+.MuiTablePagination-actions .MuiIconButton-root {
+  color: #e11d48 !important;
+  border-radius: 8px !important;
+  margin: 0 4px !important;
+}
+
+.MuiTablePagination-actions .MuiIconButton-root:hover {
+  background-color: #ffe4e6 !important;
+}
+
+.MuiTablePagination-actions .MuiIconButton-root.Mui-disabled {
+  color: #d1d5db !important;
+}
+
+/* ===== Truncate Text ===== */
+.truncate-text {
+  max-width: 180px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+  color: #1f2937;
+  transition: all 0.2s ease;
+}
+
+.truncate-text:hover {
+  color: #e11d48;
+}
+
+/* ===== Deleted Status Badge ===== */
+.status-deleted {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  color: #991b1b;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ===== Restore Button ===== */
+.restore-button {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  color: #065f46;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.restore-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* ===== Delete Permanently Button ===== */
+.delete-permanent-button {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  color: #991b1b;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.delete-permanent-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+/* ===== Responsive Adjustments ===== */
+@media (max-width: 1200px) {
+  .MuiTableHead-root .MuiTableCell-root,
+  .MuiTableBody-root .MuiTableCell-root {
+    padding: 12px 14px !important;
+    font-size: 0.85rem !important;
+  }
+  
+  .truncate-text {
+    max-width: 140px;
+  }
+}
+
+@media (max-width: 768px) {
+  .MuiToolbar-root {
+    padding: 16px !important;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .MuiTableHead-root .MuiTableCell-root,
+  .MuiTableBody-root .MuiTableCell-root {
+    padding: 10px 12px !important;
+    font-size: 0.8rem !important;
+  }
+  
+  .truncate-text {
+    max-width: 100px;
+  }
+}

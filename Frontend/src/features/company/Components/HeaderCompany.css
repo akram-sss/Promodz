@@ -1,0 +1,46 @@
+/* Header Company Styles */
+
+/* Ensure dropdown renders properly */
+[role="listbox"].MuiSelect-listbox {
+  position: absolute !important;
+  z-index: 1300 !important;
+}
+
+/* Plan Badge Animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Gold plan special effect */
+.plan-badge-gold {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 215, 0, 0.1) 0%,
+    rgba(255, 215, 0, 0.3) 50%,
+    rgba(255, 215, 0, 0.1) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 3s infinite linear;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .header-container {
+    padding: 12px 16px;
+  }
+}
+
+@media (max-width: 600px) {
+  .plan-badge {
+    padding: 4px 10px;
+  }
+  
+  .plan-badge .plan-label {
+    display: none;
+  }
+}

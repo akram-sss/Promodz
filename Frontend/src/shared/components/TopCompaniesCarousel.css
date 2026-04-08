@@ -1,0 +1,110 @@
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(calc(-1 * var(--total-width)));
+  }
+}
+
+.top-companies-section {
+  width: 100%;
+  margin: 48px 0;
+}
+
+.top-companies-header {
+  text-align: center;
+  padding: 0 24px 32px;
+}
+
+.top-companies-header h2 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #9766FF 0%, #7c3aed 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 12px;
+}
+
+.top-companies-header p {
+  font-size: 1.125rem;
+  color: #6b7280;
+  font-weight: 500;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.top-companies-carousel {
+  width: 100%;
+  overflow: hidden;
+  padding: 32px 0;
+  background: linear-gradient(135deg, #f5f3ff 0%, #faf5ff 50%, #f5f3ff 100%);
+  position: relative;
+}
+
+.top-companies-carousel::before,
+.top-companies-carousel::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 150px;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.top-companies-carousel::before {
+  left: 0;
+  background: linear-gradient(to right, #f5f3ff, transparent);
+}
+
+.top-companies-carousel::after {
+  right: 0;
+  background: linear-gradient(to left, #f5f3ff, transparent);
+}
+
+.carousel-track {
+  display: flex;
+  gap: 24px;
+  animation: scroll var(--animation-duration, 30s) linear infinite;
+  width: fit-content;
+  will-change: transform;
+}
+
+.carousel-track:hover {
+  animation-play-state: paused;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .top-companies-section {
+    margin: 24px 0;
+  }
+
+  .top-companies-header {
+    padding: 0 16px 20px;
+  }
+
+  .top-companies-header h2 {
+    font-size: 1.4rem;
+  }
+
+  .top-companies-header p {
+    font-size: 0.85rem;
+  }
+
+  .top-companies-carousel {
+    padding: 16px 0;
+  }
+  
+  .carousel-track {
+    animation-duration: 20s;
+    gap: 16px;
+  }
+  
+  .top-companies-carousel::before,
+  .top-companies-carousel::after {
+    width: 40px;
+  }
+}

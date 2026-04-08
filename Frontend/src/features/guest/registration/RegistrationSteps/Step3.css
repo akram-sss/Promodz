@@ -1,0 +1,247 @@
+.step3-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  align-items: stretch;
+}
+
+.step3-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.icon-container {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(124, 58, 237, 0.05) 100%);
+  border-radius: 18px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.step3-header h3 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #2D264B;
+  margin-bottom: 0.5rem;
+}
+
+.step3-label {
+  font-size: 0.95rem;
+  color: #666;
+  line-height: 1.5;
+}
+
+.step3-interests-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  width: 100%;
+  margin-bottom: 2rem;
+}
+
+.step3-interest-btn {
+  background: #f8f9fa;
+  border: 2px solid #e0e0e0;
+  border-radius: 16px;
+  padding: 1.5rem 1rem;
+  font-size: 0.95rem;
+  color: #2D264B;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.step3-interest-btn:hover:not(.disabled) {
+  border-color: #7C3AED;
+  transform: translateY(-4px);
+  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.15);
+}
+
+.step3-interest-btn.selected {
+  border-color: #7C3AED;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(124, 58, 237, 0.05) 100%);
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.2);
+}
+
+.step3-interest-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.interest-icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.interest-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.checkmark {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 24px;
+  height: 24px;
+  background: #7C3AED;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: checkmarkAppear 0.3s ease-out;
+}
+
+@keyframes checkmarkAppear {
+  from {
+    transform: scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) rotate(360deg);
+    opacity: 1;
+  }
+}
+
+.step3-buttons {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.step3-back-btn {
+  padding: 1rem 1.5rem;
+  background: white;
+  color: #666;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.step3-back-btn:hover {
+  background: #f8f9fa;
+  border-color: #7C3AED;
+  color: #7C3AED;
+  transform: translateY(-2px);
+}
+
+.step3-finish-btn {
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, #7C3AED 0%, #6024C8 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 1.05rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.2rem;
+}
+
+.step3-finish-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #6024C8 0%, #5020A8 100%);
+  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+  transform: translateY(-2px);
+}
+
+.step3-finish-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(124, 58, 237, 0.3);
+}
+
+.step3-finish-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.step3-later-btn {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background: white;
+  color: #666;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.step3-later-btn:hover {
+  background: #f8f9fa;
+  border-color: #7C3AED;
+  color: #7C3AED;
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .step3-interests-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .step3-interests-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.8rem;
+  }
+
+  .step3-interest-btn {
+    padding: 1.2rem 0.8rem;
+  }
+
+  .interest-icon {
+    font-size: 1.5rem;
+  }
+
+  .interest-label {
+    font-size: 0.85rem;
+  }
+
+  .step3-buttons {
+    grid-template-columns: 1fr;
+  }
+}

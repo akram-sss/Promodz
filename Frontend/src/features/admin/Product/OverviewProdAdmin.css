@@ -1,0 +1,171 @@
+.overview-container{
+    padding: 24px 0px;
+    overflow-y: auto;
+}
+
+
+/* AdminProductTable.css */
+
+/* .admin-table-container {
+  padding: 2rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #ffffff;
+  min-height: 100vh;
+}
+
+.admin-table-header {
+  display: flex;
+  justify-content: flex-start;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.admin-table-header h2 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.sort-select {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  color: #333;
+  border: 1px solid #ccc;
+  background: white;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.sort-select:hover {
+  border-color: #7f5af0;
+  box-shadow: 0 0 0 2px rgba(127, 90, 240, 0.2);
+}
+
+.admin-product-table {
+  width: 100%;
+  border-collapse: collapse;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.05);
+  background-color: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.admin-product-table th,
+.admin-product-table td {
+  text-align: center;
+  color: #333;
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.admin-product-table thead th {
+  background-color: #f3e8ff;
+  font-weight: 600;
+  color: #444;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.product-img {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  border-radius: 6px;
+  transition: transform 0.3s ease;
+}
+
+.product-img:hover {
+  transform: scale(1.05);
+}
+
+.highlight-discount {
+  font-weight: bold;
+  color: #ff4d4d !important;
+
+}
+
+.icon-button {
+  background: none;
+  border: none;
+  margin: 0 0.3rem;
+  cursor: pointer;
+  padding: 0.3rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.icon-button.edit:hover {
+  background-color: #e0f0ff;
+    color: #1e90ff;
+}
+
+.icon-button.delete:hover {
+  background-color: #ffe0e0;
+    color: #ff4d4d;
+}
+
+.icon-button.edit {
+
+    color: #1e90ff;
+}
+
+.icon-button.delete {
+
+    color: #ff4d4d;
+}
+
+.icon-button {
+  font-size: 1.2rem;
+  color: #555;
+}
+
+.controls-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.search-input {
+  padding: 0.6rem 1rem;
+  font-size: 1rem;
+  color: #333;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  min-width: 250px;
+  background-color: #fff;
+  transition: all 0.3s ease;
+}
+
+.search-input::placeholder {
+  color: #999;
+  font-style: italic;
+}
+
+.search-input:focus {
+  border-color: #7f5af0;
+  box-shadow: 0 0 0 3px rgba(127, 90, 240, 0.2);
+  outline: none;
+}
+
+
+.sort-select {
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background: white;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.sort-select:hover,
+.sort-select:focus {
+  border-color: #7f5af0;
+  box-shadow: 0 0 0 2px rgba(127, 90, 240, 0.2);
+}
+ */

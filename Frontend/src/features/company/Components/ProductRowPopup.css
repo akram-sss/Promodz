@@ -1,0 +1,11 @@
+.view-product-link{
+  color: #9766ff;
+  text-decoration: none;
+  font-weight: bold;
+  transition: color 0.3s ease;
+
+  &:hover {
+    color: #7c3aed;
+    text-decoration: underline;
+  }
+}

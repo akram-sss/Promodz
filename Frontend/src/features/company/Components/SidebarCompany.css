@@ -1,0 +1,148 @@
+.sidebar {
+  width: 100%;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  padding: 30px !important;
+  padding-right: 15px !important;
+  padding-left: 45px !important;
+  background-color: #fff; /* Optional: set a background */
+  overflow-y: auto;
+  z-index: 1000;
+  box-sizing: border-box;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  background-color: #f5ebff;
+  height: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  box-sizing: border-box;
+}
+
+.nav-item a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  border-left: #8a5cf62f 4px solid;
+  padding: 10px 12px;
+  color: #333;
+  text-decoration: none;
+  border-radius: 10px;
+  transition: background-color 0.2s ease, color 0.2s ease, border-left-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+.nav-item a:hover {
+  color: #7c3aed;
+  background-color: #8a5cf62f;
+}
+
+.nav-item a.active {
+  color: #8b5cf6;
+  border-left-color: #8b5cf6;
+  background-color: #8a5cf62f;
+  font-weight: 700;
+}
+
+
+.sidebar-footer-1{
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+
+
+.sidebar-footer-1 a {
+  display: block;
+  padding: 10px 16px;
+  color: #333;
+  text-decoration: none;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.sidebar-footer-1 a:hover {
+  color: #7c3aed;
+}
+
+.sidebar-footer-1 a.active {
+  color: #8b5cf6;
+  font-weight: 700;
+}
+
+
+.sidebar-footer-2{
+  margin-top: 0px;
+}
+
+
+
+.sidebar-footer-2 a {
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #333;
+  text-decoration: none;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.sidebar-footer-2 a:hover {
+  color: #7c3aed;
+}
+
+.sidebar-footer-2 a.active {
+  color: #8b5cf6;
+  font-weight: 700;
+}
+
+.sidebar-logout-btn {
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #333;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: inherit;
+  font-weight: inherit;
+  font-family: inherit;
+  transition: color 0.2s ease;
+  width: 100%;
+}
+
+.sidebar-logout-btn:hover {
+  color: #7c3aed;
+}
+
+.home-link {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  color: #8b5cf6 !important;
+  text-decoration: none;
+  border-radius: 10px;
+  border-left: 4px solid transparent !important;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+.home-link:hover {
+  background-color: #8a5cf615;
+}
+
+.sidebar-divider {
+  height: 1px;
+  background-color: #e5e0f5;
+  margin: 4px 12px 8px;
+}

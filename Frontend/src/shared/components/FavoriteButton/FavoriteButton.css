@@ -1,0 +1,60 @@
+.favorite-btn {
+  position: relative;
+  display: inline-block;
+  background: transparent;
+  border: none;
+  padding: 6px;
+  line-height: 0;
+  cursor: pointer;
+  color: #9766FF;
+}
+
+.favorite-btn:focus-visible {
+  outline: 2px solid rgba(151, 102, 255, 0.45);
+  outline-offset: 2px;
+  border-radius: 999px;
+}
+
+.heart-pop {
+  animation: heartPop 0.5s cubic-bezier(0.4, 2, 0.6, 1);
+}
+
+@keyframes heartPop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.4); }
+  60% { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+.sparkle-burst {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  pointer-events: none;
+  z-index: 2;
+  width: 32px;
+  height: 32px;
+  transform: translate(-50%, -50%);
+}
+
+.sparkle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ffd700;
+  opacity: 0.8;
+  animation: sparkleBurst 0.7s forwards;
+}
+
+.sparkle.s1 { left: 50%; top: 0%;   animation-delay: 0s; }
+.sparkle.s2 { left: 90%; top: 30%;  animation-delay: 0.05s; }
+.sparkle.s3 { left: 80%; top: 80%;  animation-delay: 0.1s; }
+.sparkle.s4 { left: 20%; top: 80%;  animation-delay: 0.15s; }
+.sparkle.s5 { left: 10%; top: 30%;  animation-delay: 0.2s; }
+
+@keyframes sparkleBurst {
+  0% { transform: scale(0.5) translateY(0); opacity: 1; }
+  60% { opacity: 1; }
+  100% { transform: scale(1.2) translateY(-18px); opacity: 0; }
+} 

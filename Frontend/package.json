@@ -1,0 +1,55 @@
+{
+  "name": "front-end",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "start": "serve -s dist -l 5173",
+    "preview": "vite preview",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.1.2",
+    "@mui/joy": "^5.0.0-beta.52",
+    "@mui/lab": "^7.0.0-beta.14",
+    "@mui/material": "^7.2.0",
+    "@mui/x-date-pickers": "^8.9.0",
+    "add": "^2.0.6",
+    "axios": "^1.11.0",
+    "button": "^1.1.1",
+    "card": "^2.5.4",
+    "dayjs": "^1.11.13",
+    "export-to-csv": "^1.4.0",
+    "leaflet": "^1.9.4",
+    "lucide-react": "^0.525.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-leaflet": "^5.0.0",
+    "react-router-dom": "^7.6.2",
+    "recharts": "^3.0.2",
+    "separator": "^0.1.0",
+    "serve": "^14.2.6",
+    "shadcn-ui": "^0.9.5",
+    "vite-plugin-pwa": "^1.2.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.25.0",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "@vitejs/plugin-react": "^4.4.1",
+    "eslint": "^9.25.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "globals": "^16.0.0",
+    "vite": "^6.3.5",
+    "vite-plugin-svgr": "^4.3.0"
+  },
+  "engines": {
+    "node": "20.x"
+  }
+}

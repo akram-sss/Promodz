@@ -1,0 +1,12 @@
+.LandingPage{
+    background-color: white;
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+}
+
+.LandingPage > :not(:first-child):not(:last-child) {
+    flex: 1 0 auto;
+}

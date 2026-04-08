@@ -1,0 +1,137 @@
+.promotion-form {
+  max-width: 750px;
+  color: #333;
+  padding: 0rem 2.5rem;
+  padding-left: 0px;
+  background: #fff;
+  font-family: 'Segoe UI', sans-serif;
+  border-radius: 12px;
+
+}
+
+.form-title {
+  font-size: 1.9rem;
+  font-weight: 600;
+  text-align: left;
+  margin-bottom: 2rem;
+  margin-top: 0px;
+  color: #9c4ef4; /* Main color applied */
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.upload-box {
+  border: 2px dashed #9c4ef4; /* Main color border */
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  text-align: center;
+  color: #555;
+  background: #faf8ff; /* light purple background */
+  transition: border 0.3s ease;
+}
+
+.upload-box:hover {
+  border-color: #7c3aed; /* slightly darker on hover */
+}
+
+.upload-box input[type='file'] {
+  margin-bottom: 0.5rem;
+  align-self: center;
+  cursor: pointer;
+  color: #9c4ef4;
+}
+
+.upload-box input[type='file']::file-selector-button {
+    background-color: #9c4ef4;
+  color: #fff;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+.upload-box input[type='file']::file-selector-button:hover {
+  background-color: #7c3aed; /* darker purple on hover */
+}
+
+
+.submit-btn {
+  display: block;
+  margin: 2rem auto 0;
+  background-color: #9c4ef4;
+  color: #fff;
+  padding: 0.9rem 2.2rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s ease;
+}
+
+.submit-btn:hover {
+  background-color: #7c3aed;
+}
+
+.preview-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin-top: 1rem;
+}
+
+.preview-container {
+  position: relative;
+  display: inline-block;
+  margin: 5px;
+}
+
+.preview-thumbnail {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid #9c4ef4; /* main color border */
+}
+
+.remove-btn {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #f44336;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.remove-btn:hover {
+  background: #d32f2f;
+}
+
+/* Optional: Focus state for text fields or select boxes */
+.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #9c4ef4 !important;
+}
+
+.MuiInputLabel-root.Mui-focused {
+  color: #9c4ef4 !important;
+}
+
+/* Optional: Chip color inside select */
+.MuiChip-root {
+  background-color: #e4d1fb;
+  color: #4a1977;
+  font-weight: 500;
+}
