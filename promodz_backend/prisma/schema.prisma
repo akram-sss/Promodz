@@ -37,9 +37,11 @@ model User {
   postalCode             String?
   description            String?
   country                String?
-  totalProducts          Int                  @default(0)
-  totalFollowers         Int                  @default(0)
-  totalClicks            Int                  @default(0)
+  totalProducts          Int?                 @default(0)
+  totalFollowers         Int?                 @default(0)
+  totalClicks            Int?                 @default(0)
+  resetCode              String?
+  resetCodeExpiry        DateTime?
   deletedBy              User?                @relation("UserDeletedBy", fields: [deletedById], references: [id])
   deletedUsers           User[]               @relation("UserDeletedBy")
   companiesManaged       CompanyAdmin[]       @relation("AdminUser")
@@ -72,7 +74,7 @@ model Product {
   name           String
   description    String?
   price          Float
-  discount       Float                @default(0)
+  discount       Float?               @default(0)
   link           String?
   images         String[]             @default([])
   createdAt      DateTime             @default(now())
@@ -86,6 +88,7 @@ model Product {
   categoryId     String?
   subCategoryId  String?
   subCategoryIds String[]             @default([])
+  updatedAt      DateTime             @default(now()) @updatedAt
   category       Category?            @relation(fields: [categoryId], references: [id])
   company        User                 @relation("Company", fields: [companyId], references: [id])
   createdBy      User                 @relation("Creator", fields: [createdById], references: [id])
@@ -102,6 +105,7 @@ model Category {
   id            String        @id @default(cuid())
   name          String        @unique
   image         String?
+  description   String?
   products      Product[]
   subCategories SubCategory[]
 }
@@ -140,15 +144,17 @@ model CompanyClick {
 }
 
 model CompanyAdmin {
-  id        String  @id @default(cuid())
+  id        String   @id @default(cuid())
   adminId   String
   companyId String
-  canDelete Boolean @default(true)
-  canEdit   Boolean @default(true)
-  canViews  Boolean @default(true)
-  canAdd    Boolean @default(false)
-  admin     User    @relation("AdminUser", fields: [adminId], references: [id])
-  company   User    @relation("CompanyUser", fields: [companyId], references: [id])
+  canDelete Boolean  @default(true)
+  canEdit   Boolean  @default(true)
+  canViews  Boolean  @default(true)
+  canAdd    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+  admin     User     @relation("AdminUser", fields: [adminId], references: [id])
+  company   User     @relation("CompanyUser", fields: [companyId], references: [id])
 }
 
 model ProductFavorite {
@@ -167,6 +173,7 @@ model ProductRating {
   userId    String
   productId String
   rating    Int?
+  comment   String?
   createdAt DateTime @default(now())
   product   Product  @relation(fields: [productId], references: [id])
   user      User     @relation(fields: [userId], references: [id])
@@ -202,8 +209,8 @@ model UserActivity {
 model Subscription {
   id              String                @id @default(cuid())
   companyId       String                @unique
-  plan            String
-  status          String                @default("ACTIVE")
+  plan            SubscriptionPlan
+  status          SubscriptionStatus    @default(ACTIVE)
   startDate       DateTime
   endDate         DateTime
   price           Float
@@ -211,8 +218,10 @@ model Subscription {
   nextBillingDate DateTime?
   paymentMethod   String?
   lastPaymentDate DateTime?
+  transactionId   String?
+  notes           String?
   createdAt       DateTime              @default(now())
-  updatedAt       DateTime              @updatedAt
+  updatedAt       DateTime              @default(now()) @updatedAt
   company         User                  @relation("CompanySubscription", fields: [companyId], references: [id])
   features        SubscriptionFeature[]
   invoices        Invoice[]
@@ -222,10 +231,10 @@ model Feature {
   id           String                @id @default(cuid())
   name         String                @unique
   description  String?
-  type         String?
+  type         FeatureType           @default(BOOLEAN)
   defaultValue String?
+  isActive     Boolean               @default(true)
   createdAt    DateTime              @default(now())
-  updatedAt    DateTime              @updatedAt
   subscriptions SubscriptionFeature[]
 }
 
@@ -247,10 +256,15 @@ model Invoice {
   subscriptionId String
   userId         String?
   amount         Float
+  currency       String        @default("USD")
   invoiceNumber  String        @unique
-  status         String        @default("PENDING")
+  status         InvoiceStatus @default(PENDING)
   dueDate        DateTime
-  paidAt         DateTime?
+  paidDate       DateTime?
+  items          Json?
+  taxAmount      Float?        @default(0)
+  totalAmount    Float?
+  notes          String?
   createdAt      DateTime      @default(now())
   subscription   Subscription  @relation(fields: [subscriptionId], references: [id])
   user           User?         @relation("UserInvoices", fields: [userId], references: [id])
@@ -265,21 +279,22 @@ model Ad {
   position    String
   isActive    Boolean  @default(true)
   clicks      Int      @default(0)
+  impressions Int      @default(0)
   expiresAt   DateTime?
   createdById String
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime @default(now()) @updatedAt
   createdBy   User     @relation("AdCreatedBy", fields: [createdById], references: [id])
 }
 
 model Feedback {
   id         String    @id @default(cuid())
   message    String
-  type       String    @default("general")
-  status     String    @default("pending")
+  type       String?
+  status     String?
   fullName   String?
   email      String?
-  senderRole String?
+  senderRole String?   @default("user")
   userId     String?
   productId  String?
   createdAt  DateTime  @default(now())
@@ -322,7 +337,7 @@ model ProductEditHistory {
   id        String   @id @default(cuid())
   productId String
   userId    String
-  createdAt DateTime @default(now())
+  editedAt  DateTime @default(now())
   product   Product  @relation(fields: [productId], references: [id])
   user      User     @relation(fields: [userId], references: [id])
 }
@@ -332,23 +347,26 @@ model Notification {
   userId    String
   title     String
   message   String
-  type      String?
+  type      String
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
+  readAt    DateTime?
   user      User     @relation("NotificationUser", fields: [userId], references: [id])
 }
 
 model SupportTicket {
-  id        String   @id @default(cuid())
-  userId    String?
-  companyId String?
-  subject   String?
-  message   String?
-  status    String   @default("open")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  user      User?    @relation("SupportTicketUser", fields: [userId], references: [id])
-  company   User?    @relation("SupportTicketCompany", fields: [companyId], references: [id])
+  id          String   @id @default(cuid())
+  userId      String
+  companyId   String?
+  subject     String
+  description String
+  status      String   @default("OPEN")
+  priority    String   @default("MEDIUM")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+  resolvedAt  DateTime?
+  user        User     @relation("SupportTicketUser", fields: [userId], references: [id])
+  company     User?    @relation("SupportTicketCompany", fields: [companyId], references: [id])
 }
 
 enum Role {
@@ -369,4 +387,31 @@ enum DeviceType {
   DESKTOP
   TABLET
   OTHER
+}
+
+enum SubscriptionPlan {
+  FREE
+  BASIC
+  PREMIUM
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  PENDING
+}
+
+enum InvoiceStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum FeatureType {
+  BOOLEAN
+  NUMBER
+  TEXT
 }

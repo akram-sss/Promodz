@@ -107,15 +107,19 @@ async function main() {
   // Clear existing data in correct order (respect foreign keys)
   console.log("Clearing existing data...");
   try {
-    await prisma.topCompany.deleteMany();
+    await prisma.supportTicket.deleteMany();
     await prisma.notification.deleteMany();
+    await prisma.searchHistory.deleteMany();
+    await prisma.productEditHistory.deleteMany();
+    await prisma.topCompany.deleteMany();
     await prisma.feedback.deleteMany();
     await prisma.ad.deleteMany();
-    await prisma.companyFollow.deleteMany();
-    await prisma.companyAdmin.deleteMany();
+    await prisma.invoice.deleteMany();
     await prisma.subscriptionFeature.deleteMany();
     await prisma.feature.deleteMany();
     await prisma.subscription.deleteMany();
+    await prisma.companyFollow.deleteMany();
+    await prisma.companyAdmin.deleteMany();
     await prisma.productRating.deleteMany();
     await prisma.productFavorite.deleteMany();
     await prisma.productClick.deleteMany();
@@ -123,6 +127,7 @@ async function main() {
     await prisma.product.deleteMany();
     await prisma.subCategory.deleteMany();
     await prisma.category.deleteMany();
+    await prisma.legalSection.deleteMany();
     await prisma.userActivity.deleteMany();
     await prisma.user.deleteMany();
   } catch (error) {
@@ -361,6 +366,8 @@ async function main() {
     { name: "custom_domain", description: "Custom domain support", type: "BOOLEAN", defaultValue: "false" },
     { name: "ad_free", description: "Ad-free experience", type: "BOOLEAN", defaultValue: "true" },
   ];
+
+  // Note: Feature.type uses FeatureType enum (BOOLEAN, NUMBER, TEXT)
 
   for (const feature of features) {
     await prisma.feature.upsert({
