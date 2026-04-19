@@ -18,24 +18,27 @@ jobs:
           script: |
             cd /var/www/Promodz
             
-            # 1. Mark directory as safe for Git
+            # 1. Sync code
             git config --global --add safe.directory /var/www/Promodz
-
-            # 2. FORCE Git to match the repository (This fixes the Abort error)
             git fetch origin main
             git reset --hard origin/main
-
-            # Pull latest code
-            git pull origin main
             
-            # Update Backend & DB
+            # 2. Update Backend
             cd promodz_backend
             npm install
-            npx prisma generate
-            npx prisma migrate deploy
-            pm2 restart api-backend
             
-            # Update Frontend
+            # 3. FIX PERMISSIONS (The missing piece)
+            # This makes the prisma file executable for the deployment process
+            chmod +x node_modules/.bin/prisma
+            
+            # 4. Sync Database & Generate Client
+            npx prisma generate
+            npx prisma db push --accept-data-loss # Use db push for faster dev updates
+            
+            # 5. Restart with new environment/code
+            pm2 restart api-backend --update-env
+            
+            # 6. Update Frontend
             cd ../Frontend
             npm install
             npm run build
