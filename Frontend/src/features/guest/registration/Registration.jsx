@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 
 export default function Registration() {
   const [step, setStep] = useState(1);
+  const [authTokens, setAuthTokens] = useState(null);
   const [formData, setFormData] = useState({
     fullName: '',
     username: '',
@@ -21,7 +22,12 @@ export default function Registration() {
     setFormData((prev) => ({ ...prev, ...fields }));
   };
 
-  const nextStep = () => setStep((prev) => Math.min(prev + 1, 3));
+  const nextStep = (tokens) => {
+    if (tokens?.accessToken) {
+      setAuthTokens(tokens);
+    }
+    setStep((prev) => Math.min(prev + 1, 3));
+  };
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
 
   return (
@@ -95,7 +101,7 @@ export default function Registration() {
           <div className="step-content">
             {step === 1 && <Step1 onNext={nextStep} formData={formData} updateFormData={updateFormData} />}
             {step === 2 && <Step2 onBack={prevStep} onNext={nextStep} formData={formData} />}
-            {step === 3 && <Step3 onBack={prevStep} formData={formData} />}
+            {step === 3 && <Step3 onBack={prevStep} formData={formData} authTokens={authTokens} />}
           </div>
 
           <div className="signin-prompt">

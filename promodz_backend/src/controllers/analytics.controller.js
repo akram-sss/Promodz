@@ -3,6 +3,7 @@
 import { prisma } from "../utils/prisma.js";
 import { activeUsers, activeVisitors } from "../utils/activeUsers.js";
 import { parseVisitorInfo } from "../middleware/trackVisitor.js";
+import { hashIp } from "../utils/hashIp.js";
 import { subDays, startOfMonth, format } from "date-fns";
 
 // ============================================================
@@ -526,28 +527,27 @@ const GUEST_THROTTLE_MS = 30 * 60 * 1000;
 export const trackPublicVisit = async (req, res) => {
   try {
     const visitorInfo = parseVisitorInfo(req);
+    const rawIp = visitorInfo.ipAddress;
 
-    console.log("[trackPublicVisit] Guest visit from IP:", visitorInfo.ipAddress, "| Device:", visitorInfo.deviceType, "| OS:", visitorInfo.os, "| Browser:", visitorInfo.browser, "| City:", visitorInfo.city);
-
-    // Update in-memory active visitors map for online count (always)
-    if (visitorInfo.ipAddress) {
-      activeVisitors.set(visitorInfo.ipAddress, {
+    // Update in-memory active visitors map for online count (always, uses raw IP for accuracy)
+    if (rawIp) {
+      activeVisitors.set(rawIp, {
         lastSeen: new Date(),
         userId: null,
       });
     }
 
-    console.log("[trackPublicVisit] Active visitors count:", activeVisitors.size);
-
     // Throttle: skip DB write if already tracked this IP recently
-    const throttleKey = visitorInfo.ipAddress || "unknown";
+    const throttleKey = rawIp || "unknown";
     const lastRecorded = guestThrottle.get(throttleKey);
     const now = Date.now();
 
     if (lastRecorded && now - lastRecorded < GUEST_THROTTLE_MS) {
-      console.log("[trackPublicVisit] THROTTLED — skipping DB write for:", throttleKey);
       return res.json({ success: true, throttled: true });
     }
+
+    // Hash IP before storing in DB for privacy
+    const hashedIp = hashIp(rawIp);
 
     await prisma.userActivity.create({
       data: {
@@ -558,15 +558,14 @@ export const trackPublicVisit = async (req, res) => {
         browser: visitorInfo.browser,
         city: visitorInfo.city,
         country: visitorInfo.country,
-        ipAddress: visitorInfo.ipAddress,
+        ipAddress: hashedIp,
       },
     });
 
     guestThrottle.set(throttleKey, now);
-    console.log("[trackPublicVisit] ✅ Guest UserActivity SAVED for:", throttleKey);
     res.json({ success: true });
   } catch (err) {
-    console.error("Error tracking public visit:", err);
+    console.error("Error tracking public visit:", err.message);
     res.json({ success: false });
   }
 };

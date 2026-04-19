@@ -1,22 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Step3.css';
 import { useNavigate } from 'react-router-dom';
+import { productAPI } from '@shared/api';
+import api from '@shared/api/client';
 
-const INTERESTS = [
-  { label: 'Electronics', icon: '💻' },
-  { label: 'Health & Care', icon: '🏥' },
-  { label: 'Home & Garden', icon: '🏡' },
-  { label: 'Food & Dining', icon: '🍽️' },
-  { label: 'Travel', icon: '✈️' },
-  { label: 'Clothing', icon: '👕' },
-  { label: 'Sports', icon: '⚽' },
-  { label: 'Entertainment', icon: '🎬' },
-  { label: 'Books', icon: '📚' },
-];
+// Map category names to icons
+const CATEGORY_ICONS = {
+  'Fashion & Apparel': '👗',
+  'Electronics & Gadgets': '💻',
+  'Home & Living': '🏡',
+  'Groceries & Food': '🍽️',
+  'Beauty & Personal Care': '💄',
+  'Health & Fitness': '💪',
+  'Toys, Hobbies & Entertainment': '🎬',
+  'Automotive & Tools': '🔧',
+  'Travel & Tourism': '✈️',
+};
 
-export default function Step3({ onBack, formData }) {
+export default function Step3({ onBack, formData, authTokens }) {
   const [selected, setSelected] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
+
+  // Fetch real categories from backend
+  useEffect(() => {
+    productAPI.getCategories()
+      .then((res) => {
+        const cats = (res.data || []).map((c) => ({
+          label: c.name,
+          icon: CATEGORY_ICONS[c.name] || '📦',
+        }));
+        setCategories(cats);
+      })
+      .catch(() => {
+        // Fallback to hardcoded if API fails
+        setCategories(
+          Object.entries(CATEGORY_ICONS).map(([label, icon]) => ({ label, icon }))
+        );
+      });
+  }, []);
 
   const toggleInterest = (label) => {
     setSelected((prev) =>
@@ -28,8 +51,23 @@ export default function Step3({ onBack, formData }) {
     );
   };
 
-  const handleFinish = () => {
-    // Account is already created and verified — redirect to login
+  const handleFinish = async () => {
+    // Save interests if any selected and we have auth tokens
+    if (selected.length > 0 && authTokens?.accessToken) {
+      setSaving(true);
+      try {
+        await api.put('/users/me/interests', { interests: selected }, {
+          headers: { Authorization: `Bearer ${authTokens.accessToken}` },
+        });
+      } catch {
+        // Non-critical — interests can be set later from profile
+      }
+      setSaving(false);
+    }
+    navigate('/connection');
+  };
+
+  const handleSkip = () => {
     navigate('/connection');
   };
 
@@ -47,7 +85,7 @@ export default function Step3({ onBack, formData }) {
       </div>
 
       <div className="step3-interests-grid">
-        {INTERESTS.map((interest) => (
+        {categories.map((interest) => (
           <button
             type="button"
             key={interest.label}
@@ -72,12 +110,12 @@ export default function Step3({ onBack, formData }) {
         <button type="button" className="step3-back-btn" onClick={onBack}>
           Back
         </button>
-        <button type="button" className="step3-finish-btn" onClick={handleFinish}>
-          Go to Login
+        <button type="button" className="step3-finish-btn" onClick={handleFinish} disabled={saving}>
+          {saving ? 'Saving...' : 'Go to Login'}
         </button>
       </div>
 
-      <button type="button" className="step3-later-btn" onClick={handleFinish}>
+      <button type="button" className="step3-later-btn" onClick={handleSkip}>
         Skip for now
       </button>
     </div>

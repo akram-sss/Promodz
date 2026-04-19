@@ -5,6 +5,7 @@ import { prisma } from "../utils/prisma.js";
 import { activeUsers, activeVisitors } from "../utils/activeUsers.js";
 import { UAParser } from "ua-parser-js";
 import geoip from "geoip-lite";
+import { hashIp } from "../utils/hashIp.js";
 
 /**
  * Map UAParser device type to Prisma DeviceType enum
@@ -152,14 +153,13 @@ export const trackVisitor = async (req, res, next) => {
         browser: device.browser,
         city: location.city,
         country: location.country,
-        ipAddress: visitorIp,
+        ipAddress: hashIp(visitorIp),
       },
     });
 
     visitThrottle.set(throttleKey, now);
-    console.log("[trackVisitor] ✅ SAVED | User:", req.user?.id || "guest", "| IP:", visitorIp, "| City:", location.city, "| Device:", device.deviceType);
   } catch (err) {
-    console.error("[trackVisitor] ❌ Visitor tracking failed:", err);
+    console.error("Visitor tracking failed:", err.message);
     // Never block the request
   }
 

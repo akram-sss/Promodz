@@ -83,9 +83,14 @@ export default function Step2({ onNext, onBack, formData }) {
     setError('');
 
     try {
-      await userAPI.verifyEmail(formData.email, code);
+      const res = await userAPI.verifyEmail(formData.email, code);
       setSuccess('Email verified successfully!');
-      setTimeout(() => onNext(), 1500);
+      // Pass tokens to Step3 so interests can be saved
+      const tokens = {
+        accessToken: res.data.accessToken,
+        refreshToken: res.data.refreshToken,
+      };
+      setTimeout(() => onNext(tokens), 1500);
     } catch (err) {
       const message = err.response?.data?.error || 'Verification failed. Please try again.';
       setError(message);

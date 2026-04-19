@@ -28,9 +28,15 @@ import path from "path";
 dotenv.config();
 
 const app = express();
-
-// Security headers
-app.use(helmet());
+app.set('trust proxy', '127.0.0.1');
+// Security headers (includes HSTS for HTTPS environments)
+app.use(helmet({
+  hsts: {
+    maxAge: 63072000, // 2 years
+    includeSubDomains: true,
+    preload: true,
+  },
+}));
 
 // CORS — restrict to frontend origin in production
 const allowedOrigins = [
@@ -39,10 +45,16 @@ const allowedOrigins = [
 ];
 app.use(cors({
   origin(origin, cb) {
-    // allow server-to-server / Postman (no origin) + listed origins
+    // In production, require a valid origin (block null origin attacks)
+    if (process.env.NODE_ENV === 'production') {
+      if (!origin || !allowedOrigins.includes(origin)) {
+        return cb(new Error('CORS not allowed'));
+      }
+      return cb(null, true);
+    }
+    // In development, allow no-origin (Postman) + listed origins + LAN
     if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
-    // In development, allow any local-network origin (LAN / WiFi testing)
-    if (process.env.NODE_ENV !== 'production' && origin && /^https?:\/\/(localhost|127\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)(:\d+)?$/.test(origin)) {
+    if (/^https?:\/\/(localhost|127\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)(:\d+)?$/.test(origin)) {
       return cb(null, true);
     }
     cb(new Error('CORS not allowed'));

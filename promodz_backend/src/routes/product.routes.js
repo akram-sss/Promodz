@@ -1,4 +1,5 @@
 import express from "express";
+import rateLimit from "express-rate-limit";
 import { createProduct, getActiveProducts, getProducts } from "../controllers/product.controller.js";
 import { authenticate } from "../middleware/auth.js";
 import { optionalAuth } from "../middleware/auth.js";
@@ -8,6 +9,14 @@ import { deleteProduct, updateProductExpiry } from "../controllers/product.contr
 import { getDeletedProducts } from "../controllers/product.controller.js";
 import { getCategories, searchProducts, getCompanyPublicInfo, updateProductDetails, getTrendingSearches, getSearchSuggestions, syncCategories } from "../controllers/product.controller.js";
 const router = express.Router();
+
+const clickLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000,
+  max: 30,
+  message: { error: 'Too many requests' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // ===================== PUBLIC ROUTES =====================
 router.get("/categories", getCategories);
@@ -20,7 +29,7 @@ router.get("/company/:companyName", getCompanyPublicInfo);
 router.get("/", getProducts);
 
 // ===================== PUBLIC CLICK TRACKING =====================
-router.post("/:productId/click", incrementProductClick);
+router.post("/:productId/click", clickLimiter, incrementProductClick);
 
 // ===================== AUTHENTICATED ROUTES =====================
 router.post("/", authenticate, createProduct);

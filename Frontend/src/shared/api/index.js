@@ -19,6 +19,10 @@ export const authAPI = {
 };
 
 export const userAPI = {
+  /** Check if a username is available */
+  checkUsername: (username) =>
+    api.get('/users/check-username', { params: { username } }),
+
   /** Public registration (USER only) */
   registerPublic: (userData) =>
     api.post('/users/register-public', userData),
@@ -54,6 +58,10 @@ export const userAPI = {
   /** Get user's followed companies */
   getFollowing: () =>
     api.get('/users/me/following'),
+
+  /** Save user interests (up to 3 category names) */
+  saveInterests: (interests) =>
+    api.put('/users/me/interests', { interests }),
 
   /** Get all users (admin) */
   getAll: () =>

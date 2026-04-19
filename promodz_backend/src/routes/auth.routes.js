@@ -2,7 +2,7 @@ import express from 'express';
 import rateLimit from 'express-rate-limit';
 import { loginUser } from '../controllers/user.controller.js';
 import { refreshAccessToken } from '../controllers/auth.controller.js';
-import { resetPasswordWithCode, sendResetCode } from '../middleware/auth.js';
+import { resetPasswordWithCode, sendResetCode } from '../controllers/passwordReset.controller.js';
 const router = express.Router();
 
 // Rate limiters for brute-force protection

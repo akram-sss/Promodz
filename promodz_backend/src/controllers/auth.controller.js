@@ -15,11 +15,15 @@ export const refreshAccessToken = async (req, res) => {
     
     const user = await prisma.user.findUnique({
       where: { id: decoded.id },
-      select: { isBanned: true },
+      select: { isBanned: true, isDeleted: true },
     });
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });
+    }
+
+    if (user.isDeleted) {
+      return res.status(403).json({ error: "Account has been deleted." });
     }
 
     if (user.isBanned) {

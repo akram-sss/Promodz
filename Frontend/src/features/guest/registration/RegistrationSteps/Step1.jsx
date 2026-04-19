@@ -21,10 +21,10 @@ export default function Step1({ onNext, formData, updateFormData }) {
       setUsernameStatus('checking');
       const timer = setTimeout(async () => {
         try {
-          // Try to check via public users endpoint — if the API doesn't have a dedicated check,
-          // we'll just mark as available and let the registration endpoint validate
-          setUsernameStatus('available');
+          const res = await userAPI.checkUsername(username);
+          setUsernameStatus(res.data.available ? 'available' : 'taken');
         } catch {
+          // On network error, don't block — let backend validate on submit
           setUsernameStatus('available');
         }
       }, 500);

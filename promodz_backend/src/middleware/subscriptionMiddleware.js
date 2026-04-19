@@ -4,7 +4,7 @@ import { checkSubscriptionStatus } from "../controllers/subscriptionController.j
 export const requireActiveSubscription = async (req, res, next) => {
   try {
     // Only check for company users
-    if (req.user.role !== "ENTREPRENEUR") {
+    if (req.user.role !== "ENTREPRISE") {
       return next();
     }
 
@@ -38,7 +38,7 @@ export const requireActiveSubscription = async (req, res, next) => {
 export const checkSubscriptionFeature = (featureName) => {
   return async (req, res, next) => {
     try {
-      if (req.user.role !== "ENTREPRENEUR") {
+      if (req.user.role !== "ENTREPRISE") {
         return next();
       }
 

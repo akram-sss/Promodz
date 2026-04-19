@@ -5,13 +5,20 @@ import { nanoid } from "nanoid";
 import { activeUsers } from "../utils/activeUsers.js";
 import { generateAccessToken, generateRefreshToken } from '../utils/jwt.js';
 import { sendVerificationEmail } from '../utils/email.js';
+import { validatePassword } from '../utils/validate.js';
 
 export const createUser = async (req, res) => {
-  const { username, fullName, email, phoneNumber, password, role, companyName } = req.body;
+  const { username, fullName, phoneNumber, password, role, companyName } = req.body;
+  const email = req.body.email?.trim().toLowerCase();
   const creator = req.user; // authenticated user (set by middleware)
 
   if (!username || !fullName || !email || !phoneNumber || !password || !role) {
     return res.status(400).json({ error: "All fields are required" });
+  }
+
+  const pwError = validatePassword(password);
+  if (pwError) {
+    return res.status(400).json({ error: pwError });
   }
 
   const roleUpper = role.toUpperCase();
@@ -99,16 +106,35 @@ export const createUser = async (req, res) => {
       return res.status(400).json({ error: `Invalid column: ${err.meta?.column}` });
     }
 
-    res.status(500).json({ error: "Internal server error", detail: err.message });
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const checkUsername = async (req, res) => {
+  const { username } = req.query;
+  if (!username || username.length < 3) {
+    return res.status(400).json({ error: "Username must be at least 3 characters" });
+  }
+  try {
+    const existing = await prisma.user.findUnique({ where: { username: username.toLowerCase() } });
+    res.json({ available: !existing });
+  } catch (err) {
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
 export const registerPublicUser = async (req, res) => {
-  const { username, fullName, email, phoneNumber, password } = req.body;
+  const { username, fullName, phoneNumber, password } = req.body;
+  const email = req.body.email?.trim().toLowerCase();
 
   // Required fields
   if (!username || !fullName || !email || !phoneNumber || !password) {
     return res.status(400).json({ error: "All fields are required" });
+  }
+
+  const pwError = validatePassword(password);
+  if (pwError) {
+    return res.status(400).json({ error: pwError });
   }
 
   try {
@@ -117,6 +143,13 @@ export const registerPublicUser = async (req, res) => {
     if (existingEmail) {
       // If user exists but not verified and not active, allow re-registration
       if (!existingEmail.active && !existingEmail.verified) {
+        // Check if username is taken by a different user
+        if (username !== existingEmail.username) {
+          const usernameTaken = await prisma.user.findUnique({ where: { username } });
+          if (usernameTaken) {
+            return res.status(409).json({ error: "Username already exists" });
+          }
+        }
         const code = crypto.randomInt(100000, 999999).toString();
         const hashedPassword = await bcrypt.hash(password, 10);
         await prisma.user.update({
@@ -133,8 +166,7 @@ export const registerPublicUser = async (req, res) => {
         try {
           await sendVerificationEmail(email, code);
         } catch (emailErr) {
-          console.error("Email send failed:", emailErr);
-          console.log("Verification code for", email, ":", code);
+          console.error("Email send failed:", emailErr.message);
         }
         return res.status(201).json({
           message: "A verification code has been sent to your email.",
@@ -146,7 +178,7 @@ export const registerPublicUser = async (req, res) => {
     }
 
     // Check for duplicate username
-    const existingUsername = await prisma.user.findFirst({
+    const existingUsername = await prisma.user.findUnique({
       where: { username }
     });
     if (existingUsername) {
@@ -179,8 +211,7 @@ export const registerPublicUser = async (req, res) => {
     try {
       await sendVerificationEmail(email, code);
     } catch (emailErr) {
-      console.error("Email send failed:", emailErr);
-      console.log("Verification code for", email, ":", code);
+      console.error("Email send failed:", emailErr.message);
     }
 
     res.status(201).json({
@@ -198,15 +229,13 @@ export const registerPublicUser = async (req, res) => {
       });
     }
     
-    res.status(500).json({ 
-      error: "Registration failed", 
-      detail: err.message 
-    });
+    res.status(500).json({ error: "Registration failed" });
   }
 };
 
 export const verifyEmail = async (req, res) => {
-  const { email, code } = req.body;
+  const code = req.body.code;
+  const email = req.body.email?.trim().toLowerCase();
 
   if (!email || !code) {
     return res.status(400).json({ error: "Email and verification code are required" });
@@ -231,7 +260,7 @@ export const verifyEmail = async (req, res) => {
       return res.status(400).json({ error: "Invalid or expired verification code" });
     }
 
-    await prisma.user.update({
+    const updatedUser = await prisma.user.update({
       where: { email },
       data: {
         active: true,
@@ -242,7 +271,22 @@ export const verifyEmail = async (req, res) => {
       },
     });
 
-    res.json({ message: "Email verified successfully! You can now log in." });
+    // Generate tokens so the user can save interests immediately after verification
+    const accessToken = generateAccessToken({ id: updatedUser.id, role: updatedUser.role });
+    const refreshToken = generateRefreshToken({ id: updatedUser.id, role: updatedUser.role });
+
+    res.json({
+      message: "Email verified successfully! You can now log in.",
+      accessToken,
+      refreshToken,
+      user: {
+        id: updatedUser.id,
+        username: updatedUser.username,
+        fullName: updatedUser.fullName,
+        email: updatedUser.email,
+        role: updatedUser.role,
+      },
+    });
   } catch (err) {
     console.error("Email verification error:", err);
     res.status(500).json({ error: "Verification failed" });
@@ -250,7 +294,7 @@ export const verifyEmail = async (req, res) => {
 };
 
 export const resendVerificationCode = async (req, res) => {
-  const { email } = req.body;
+  const email = req.body.email?.trim().toLowerCase();
 
   if (!email) {
     return res.status(400).json({ error: "Email is required" });
@@ -280,8 +324,7 @@ export const resendVerificationCode = async (req, res) => {
     try {
       await sendVerificationEmail(email, code);
     } catch (emailErr) {
-      console.error("Email send failed:", emailErr);
-      console.log("Verification code for", email, ":", code);
+      console.error("Email send failed:", emailErr.message);
     }
 
     res.json({ message: "A new verification code has been sent to your email." });
@@ -349,13 +392,15 @@ export const getAllUsers = async (req, res) => {
 };
 
 export const loginUser = async (req, res) => {
-  const { identifier, password } = req.body;
+  const { password } = req.body;
+  const identifier = req.body.identifier?.trim().toLowerCase();
 
   if (!identifier || !password) {
     return res.status(400).json({ error: 'Identifier and password are required' });
   }
 
   try {
+    // Try exact match on email first (already lowercased), then username
     const user = await prisma.user.findFirst({
       where: {
         OR: [{ email: identifier }, { username: identifier }],
@@ -591,6 +636,11 @@ export const changePassword = async (req, res) => {
     return res.status(400).json({ error: "Current and new password are required" });
   }
 
+  const pwError = validatePassword(newPassword);
+  if (pwError) {
+    return res.status(400).json({ error: pwError });
+  }
+
   try {
     const user = await prisma.user.findUnique({ where: { id: userId } });
 
@@ -638,6 +688,7 @@ export const getProfile = async (req, res) => {
         postalCode: true,
         description: true,
         country: true,
+        interests: true,
         _count: {
           select: {
             productsAsCompany: true,
@@ -665,7 +716,7 @@ export const updateProfile = async (req, res) => {
   const allowedFields = [
     "fullName", "username", "email", "phoneNumber", "image",
     "website", "handle", "companyName", "address", "rc",
-    "city", "postalCode", "description", "country",
+    "city", "postalCode", "description", "country", "interests",
   ];
 
   const data = {};
@@ -774,6 +825,41 @@ export const deleteAccount = async (req, res) => {
     res.status(500).json({ error: "Failed to delete account. Please try again." });
   }
 };
+// ===================== SAVE USER INTERESTS =====================
+export const saveInterests = async (req, res) => {
+  const { interests } = req.body;
+
+  if (!Array.isArray(interests)) {
+    return res.status(400).json({ error: "interests must be an array" });
+  }
+
+  if (interests.length > 3) {
+    return res.status(400).json({ error: "You can select up to 3 interests" });
+  }
+
+  // Validate that all interests are non-empty strings
+  for (const i of interests) {
+    if (typeof i !== 'string' || i.trim().length === 0) {
+      return res.status(400).json({ error: "Each interest must be a non-empty string" });
+    }
+  }
+
+  try {
+    const trimmed = interests.map(i => i.trim());
+
+    const user = await prisma.user.update({
+      where: { id: req.user.id },
+      data: { interests: trimmed },
+      select: { id: true, interests: true },
+    });
+
+    res.json({ message: "Interests saved", interests: user.interests });
+  } catch (err) {
+    console.error("Error saving interests:", err.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 export const getUserFavorites = async (req, res) => {
   try {
     const favorites = await prisma.productFavorite.findMany({

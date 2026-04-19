@@ -18,6 +18,9 @@ jobs:
           script: |
             cd /var/www/Promodz
             
+            # 1. Mark directory as safe for Git
+            git config --global --add safe.directory /var/www/Promodz
+
             # Pull latest code
             git pull origin main
             

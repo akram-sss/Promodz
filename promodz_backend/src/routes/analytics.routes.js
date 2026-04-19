@@ -1,4 +1,5 @@
 ﻿import express from "express";
+import rateLimit from "express-rate-limit";
 import {
   getMostClickedCompanies,
   getMostClickedProducts,
@@ -18,8 +19,16 @@ import { authenticate } from "../middleware/auth.js";
 
 const router = express.Router();
 
+const visitLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000,
+  max: 10,
+  message: { error: 'Too many requests' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // ===================== PUBLIC (no auth) =====================
-router.post("/track-visit", trackPublicVisit);
+router.post("/track-visit", visitLimiter, trackPublicVisit);
 
 // ===================== AUTHENTICATED (behind authorizeRoles in app.js) =====================
 router.get("/most-clicked-companies", authenticate, getMostClickedCompanies);

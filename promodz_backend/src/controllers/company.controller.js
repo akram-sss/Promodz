@@ -1,17 +1,14 @@
-import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
+import { prisma } from "../utils/prisma.js";
+import { hashIp } from "../utils/hashIp.js";
 
 export const incrementCompanyClick = async (req, res) => {
   const { companyId } = req.params;
-
-  console.log("[companyClick] Received click for companyId:", companyId);
 
   if (!companyId) {
     return res.status(400).json({ error: "Company ID is required" });
   }
 
   try {
-    // Check that it's a real company
     const company = await prisma.user.findFirst({
       where: {
         id: companyId,
@@ -20,26 +17,22 @@ export const incrementCompanyClick = async (req, res) => {
     });
 
     if (!company) {
-      console.log("[companyClick] ❌ Company not found:", companyId);
       return res.status(404).json({ error: "Company not found" });
     }
 
-    // Extract visitor info for richer analytics
     const forwarded = req.headers["x-forwarded-for"];
-    const ipAddress = forwarded ? forwarded.split(",")[0].trim() : req.socket?.remoteAddress || null;
+    const rawIp = forwarded ? forwarded.split(",")[0].trim() : req.socket?.remoteAddress || null;
+    const ipAddress = hashIp(rawIp);
     const userAgent = req.headers["user-agent"] || null;
     const userId = req.user?.id || null;
-
-    console.log("[companyClick] IP:", ipAddress, "| User:", userId || "guest", "| Company:", company.fullName);
 
     await prisma.companyClick.create({
       data: { companyId, userId, ipAddress, userAgent },
     });
 
-    console.log("[companyClick] ✅ Click SAVED for company:", company.fullName, "(", companyId, ")");
     res.status(200).json({ message: "Company click recorded" });
   } catch (error) {
-    console.error("[companyClick] ❌ Error recording company click:", error);
+    console.error("Error recording company click:", error.message);
     res.status(500).json({ error: "Internal server error" });
   }
 };

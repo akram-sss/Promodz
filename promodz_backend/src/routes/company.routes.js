@@ -1,4 +1,5 @@
 import express from "express";
+import rateLimit from "express-rate-limit";
 import { incrementCompanyClick } from "../controllers/company.controller.js";
 import { getCompanyProducts } from "../controllers/company.controller.js";
 import { authenticate } from "../middleware/auth.js";
@@ -8,7 +9,15 @@ import { getCompanyStatsAdmin, getCompanyStatsPublic } from "../controllers/comp
 import { authorizeRoles } from "../middleware/authorize.js";
 const router = express.Router();
 
-router.post("/:companyId/click", incrementCompanyClick);
+const clickLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000,
+  max: 30,
+  message: { error: 'Too many requests' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+router.post("/:companyId/click", clickLimiter, incrementCompanyClick);
 router.get("/my-products", authenticate, getCompanyProducts);
 router.get(
   "/stats",

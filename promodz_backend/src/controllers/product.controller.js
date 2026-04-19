@@ -22,6 +22,18 @@ export const createProduct = async (req, res) => {
     return res.status(400).json({ error: "Name, price and categoryId are required" });
   }
 
+  // Validate price and discount bounds
+  const parsedPrice = parseFloat(price);
+  if (isNaN(parsedPrice) || parsedPrice < 0 || parsedPrice > 999999999) {
+    return res.status(400).json({ error: "Price must be between 0 and 999,999,999" });
+  }
+  if (discount !== undefined && discount !== null) {
+    const parsedDiscount = parseFloat(discount);
+    if (isNaN(parsedDiscount) || parsedDiscount < 0 || parsedDiscount > 100) {
+      return res.status(400).json({ error: "Discount must be between 0 and 100" });
+    }
+  }
+
   let companyId;
   const createdById = user.id;
 
@@ -366,6 +378,9 @@ export const getRecommendedProducts = async (req, res) => {
     const ratingsMap = new Map(user.productRatings.map((r) => [r.productId, r.rating]));
     const followedCompanyIds = new Set(user.companiesFollowed.map((c) => c.companyId));
 
+    // User interests (category names they chose during registration)
+    const userInterests = new Set((user.interests || []).map(i => i.toLowerCase()));
+
     // Build search history terms with frequency weighting
     // More frequent searches = stronger signal
     const searchTermFrequency = new Map();
@@ -403,6 +418,13 @@ export const getRecommendedProducts = async (req, res) => {
 
       if (nameMatch) score += 50;
       if (categoryMatch) score += 30;
+
+      // ── User Interests Scoring ──
+      // Boost products whose category matches user's chosen interests
+      const productCategoryName = (product.category?.name || "").toLowerCase();
+      if (userInterests.size > 0 && userInterests.has(productCategoryName)) {
+        score += 200; // strong signal — user explicitly chose this category
+      }
 
       // ── Search History Scoring ──
       // Boost products that match the user's recent search queries
@@ -854,6 +876,20 @@ export const updateProductDetails = async (req, res) => {
   const { productId } = req.params;
   const { discount, link, images, name, description, price, categoryId, subCategoryId, subCategoryIds, startDate, expiresAt } = req.body;
   const user = req.user;
+
+  // Validate price and discount if provided
+  if (price !== undefined) {
+    const p = parseFloat(price);
+    if (isNaN(p) || p < 0 || p > 999999999) {
+      return res.status(400).json({ error: "Price must be between 0 and 999,999,999" });
+    }
+  }
+  if (discount !== undefined && discount !== null) {
+    const d = parseFloat(discount);
+    if (isNaN(d) || d < 0 || d > 100) {
+      return res.status(400).json({ error: "Discount must be between 0 and 100" });
+    }
+  }
 
   try {
     const product = await prisma.product.findUnique({
