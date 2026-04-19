@@ -3,7 +3,9 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import './HeaderAdmin.css';
 import { 
   Typography,
-  Avatar
+  Avatar,
+  useMediaQuery,
+  useTheme
 } from '@mui/material';
 import Select, { selectClasses } from '@mui/joy/Select';
 import Option from '@mui/joy/Option';
@@ -82,7 +84,7 @@ const REVERSE_MAP = {
 
 
 
-const SelectIndicator = () => {
+const SelectIndicator = ({ onLogout }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [page, setPage] = useState("");
@@ -96,6 +98,10 @@ const SelectIndicator = () => {
   }, [location.pathname]);
 
   const handleChange = (event, newValue) => {
+    if (newValue === 'logout') {
+      onLogout();
+      return;
+    }
     setPage(newValue);
     const newPath = REVERSE_MAP[newValue];
     if (newPath) {
@@ -166,18 +172,35 @@ const SelectIndicator = () => {
           fontWeight: 600, 
           fontSize: "0.9rem", 
           borderRadius: '8px',
+          mb: 0.5,
           '&:hover': { backgroundColor: '#f0f0ff' },
           '&.Mui-selected': { backgroundColor: '#ede9fe', color: '#6366f1' }
         }}>
           👤 Account
+        </Option>
+        <Option value="logout" sx={{ 
+          fontWeight: 600, 
+          fontSize: "0.9rem", 
+          borderRadius: '8px',
+          color: '#ef4444',
+          '&:hover': { backgroundColor: '#fef2f2', color: '#dc2626' },
+        }}>
+          🚪 Logout
         </Option>
       </Select>
     </SelectWrapper>
   );
 };
 const HeaderModerator = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const muiTheme = useTheme();
+  const isMobile = useMediaQuery(muiTheme.breakpoints.down('md'));
+
+  const handleLogout = () => {
+    logout();
+    navigate('/', { replace: true });
+  };
 
   const userData = user ? {
     username: user.username || user.fullName || 'Moderator',
@@ -194,7 +217,7 @@ const HeaderModerator = () => {
 
   return (
     <HeaderContainer>
-      <SelectIndicator />
+      <SelectIndicator onLogout={handleLogout} />
       
       <UserSection>
         <UserInfo onClick={() => navigate('/moderator/ModeratorAccount')}>
