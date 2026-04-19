@@ -2,7 +2,6 @@ import { prisma } from "../utils/prisma.js";
 import { subDays } from "date-fns";
 import { syncCategoriesToDB } from "../utils/syncCategories.js";
 import geoip from "geoip-lite";
-import { UAParser } from "ua-parser-js";
 
 export const createProduct = async (req, res) => {
   const user = req.user;
@@ -310,12 +309,7 @@ export const incrementProductClick = async (req, res) => {
 
     console.log("[productClick] IP:", ipAddress, "| User:", userId || "guest", "| Product:", product.name);
 
-    // Record click with full tracking data
-    await prisma.productClick.create({
-      data: { productId, userId, ipAddress, userAgent },
-    });
-
-    // Also create UserActivity so the click map can display this data
+    // Resolve clicker's city from IP
     const isLocal = ipAddress === "127.0.0.1" || ipAddress === "::1" || ipAddress === "::ffff:127.0.0.1";
     const geo = (!isLocal && ipAddress) ? geoip.lookup(ipAddress) : null;
     let city = null;
@@ -323,26 +317,15 @@ export const incrementProductClick = async (req, res) => {
     if (isLocal) {
       city = "Alger";
       country = "Algeria";
-    } else if (geo && geo.country === "DZ" && geo.city) {
-      city = geo.city;
+    } else if (geo && geo.country === "DZ") {
+      city = geo.city || null;
       country = "Algeria";
     }
-    const parser = new UAParser(userAgent || "");
-    const uaResult = parser.getResult();
-    const mapDevice = (t) => { switch(t) { case 'mobile': return 'MOBILE'; case 'tablet': return 'TABLET'; default: return 'DESKTOP'; } };
 
-    prisma.userActivity.create({
-      data: {
-        userId,
-        action: "product_click",
-        city,
-        country,
-        ipAddress,
-        browser: uaResult.browser?.name || null,
-        os: uaResult.os?.name || null,
-        deviceType: mapDevice(uaResult.device?.type),
-      },
-    }).catch((e) => console.error("UserActivity click tracking failed:", e.message));
+    // Record click with location data
+    await prisma.productClick.create({
+      data: { productId, userId, ipAddress, userAgent, city, country },
+    });
 
     console.log("[productClick] ✅ Click SAVED for product:", product.name, "(", productId, ")");
     res.status(200).json({ message: "Product click recorded" });

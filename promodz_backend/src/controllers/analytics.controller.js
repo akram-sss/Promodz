@@ -634,13 +634,12 @@ export const getMapData = async (req, res) => {
     let result = {};
 
     if (type === "click") {
-      // Click map: group product clicks by the company/product location (use UserActivity with action containing "click")
-      const stats = await prisma.userActivity.groupBy({
+      // Click map: group actual product clicks by clicker's city
+      const stats = await prisma.productClick.groupBy({
         by: ["city"],
         where: {
           createdAt: { gte: since },
           city: { not: null },
-          action: { contains: "click" },
         },
         _count: { city: true },
         orderBy: { _count: { city: "desc" } },
