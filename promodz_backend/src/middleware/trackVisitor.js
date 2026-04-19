@@ -92,6 +92,13 @@ const CITY_TO_WILAYA = {
 
 const parseLocation = (ip) => {
   if (!ip) return { city: null, country: null };
+
+  // Localhost IPs can't be geolocated — default to Alger for local development
+  const isLocal = ip === "127.0.0.1" || ip === "::1" || ip === "::ffff:127.0.0.1";
+  if (isLocal) {
+    return { city: "Alger", country: "Algeria" };
+  }
+
   const geo = geoip.lookup(ip);
   if (geo && geo.country === "DZ") {
     const rawCity = geo.city || "Unknown";
