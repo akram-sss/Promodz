@@ -308,6 +308,15 @@ const AdminAccount = () => {
       if (previewImage && previewImage !== originalData?.image) {
         updateData.image = previewImage;
       }
+
+      // If email changed, require password confirmation via dialog
+      if (originalData && formData.email.trim().toLowerCase() !== (originalData.email || '').trim().toLowerCase()) {
+        setPendingUpdateData(updateData);
+        setEmailPasswordDialog(true);
+        setIsLoading(false);
+        return;
+      }
+
       await userAPI.updateProfile(updateData);
       updateUser(updateData);
       setEditMode(false);
