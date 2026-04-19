@@ -328,11 +328,17 @@ export default function OverviewDachAdmin() {
     return () => { mounted = false; clearInterval(overviewTimer); clearInterval(chartTimer); };
   }, []);
 
-  /* Re-fetch map on toggle */
+  /* Re-fetch map on toggle + auto-refresh every 10s */
   useEffect(() => {
-    analyticsAPI.getMapData(activeMap === 'visitor' ? 'visitor' : 'click')
-      .then((res) => setMapData(res.data || {}))
-      .catch(() => {});
+    let mounted = true;
+    const fetchMap = () => {
+      analyticsAPI.getMapData(activeMap === 'visitor' ? 'visitor' : 'click')
+        .then((res) => { if (mounted) setMapData(res.data || {}); })
+        .catch(() => {});
+    };
+    fetchMap();
+    const mapTimer = setInterval(fetchMap, 10000);
+    return () => { mounted = false; clearInterval(mapTimer); };
   }, [activeMap]);
 
   if (loading) {
@@ -372,19 +378,56 @@ export default function OverviewDachAdmin() {
 
 
 
-      {/* Map Toggle */}
-      <div style={{ display: 'flex', justifyContent: 'left' }}>
-        <StyledButtonGroup variant="contained" aria-label="Map type toggle">
-          <Button onClick={() => setActiveMap('visitor')} color={activeMap === 'visitor' ? 'primary' : 'inherit'}>Visitor Map</Button>
-          <Button onClick={() => setActiveMap('click')} color={activeMap === 'click' ? 'primary' : 'inherit'}>Click Map</Button>
-        </StyledButtonGroup>
-      </div>
+      {/* Map Section */}
+      <div style={{ marginTop: '32px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+          <SectionTitle variant="h5" sx={{ mb: 0, '&:after': { display: 'none' } }}>Traffic Map</SectionTitle>
+          <div style={{ 
+            display: 'inline-flex', 
+            borderRadius: '10px', 
+            overflow: 'hidden',
+            border: '2px solid #e2e8f0',
+            backgroundColor: '#f8fafc',
+          }}>
+            <button
+              onClick={() => setActiveMap('visitor')}
+              style={{
+                padding: '8px 20px',
+                border: 'none',
+                cursor: 'pointer',
+                fontWeight: 600,
+                fontSize: '13px',
+                transition: 'all 0.2s ease',
+                backgroundColor: activeMap === 'visitor' ? '#8b5cf6' : 'transparent',
+                color: activeMap === 'visitor' ? '#fff' : '#64748b',
+              }}
+            >
+              Visitors
+            </button>
+            <button
+              onClick={() => setActiveMap('click')}
+              style={{
+                padding: '8px 20px',
+                border: 'none',
+                cursor: 'pointer',
+                fontWeight: 600,
+                fontSize: '13px',
+                transition: 'all 0.2s ease',
+                backgroundColor: activeMap === 'click' ? '#8b5cf6' : 'transparent',
+                color: activeMap === 'click' ? '#fff' : '#64748b',
+              }}
+            >
+              Clicks
+            </button>
+          </div>
+        </div>
 
-      <AlgerMap
-        data={mapData}
-        maptitle={activeMap === 'visitor' ? 'Visitor Distribution' : 'Click Distribution'}
-        cardtitle={activeMap === 'visitor' ? 'Visitors' : 'Clicks'}
-      />
+        <AlgerMap
+          data={mapData}
+          maptitle={activeMap === 'visitor' ? 'Visitor Distribution' : 'Click Distribution'}
+          cardtitle={activeMap === 'visitor' ? 'Visitors' : 'Clicks'}
+        />
+      </div>
     </div>
   );
 }

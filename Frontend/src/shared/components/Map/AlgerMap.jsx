@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { MapContainer, TileLayer, GeoJSON, ScaleControl, ZoomControl } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -6,25 +6,50 @@ import { Box, Typography } from '@mui/material';
 import WILAYA_DATA from '../../data/Map/Wilaya-data.jsx';
 
 
-// Updated Color Scale to handle higher values dynamically
+// Vibrant, clearly distinguishable color scale
 const COLOR_SCALE = [
-  { threshold: 0, color: '#f3e8ff', label: '0-49' },
-  { threshold: 50, color: '#d8b4fe', label: '50-99' },
-  { threshold: 100, color: '#c084fc', label: '100-199' },
-  { threshold: 200, color: '#a855f7', label: '200-299' },
-  { threshold: 300, color: '#9333ea', label: '300-399' },
-  { threshold: 400, color: '#8b5cf6', label: '400+' }
+  { threshold: 0,   color: '#e0e7ff', label: '0' },
+  { threshold: 1,   color: '#93c5fd', label: '1–19' },
+  { threshold: 20,  color: '#3b82f6', label: '20–49' },
+  { threshold: 50,  color: '#f59e0b', label: '50–99' },
+  { threshold: 100, color: '#f97316', label: '100–299' },
+  { threshold: 300, color: '#ef4444', label: '300+' },
 ];
 
-const AlgerMap = ({data,maptitle,cardtitle}) => {
-  // Create GeoJSON with PROPER coordinate order: [longitude, latitude]
-  const geoData = {
+const getColor = (count) => {
+  for (let i = COLOR_SCALE.length - 1; i >= 0; i--) {
+    if (count >= COLOR_SCALE[i].threshold) return COLOR_SCALE[i].color;
+  }
+  return COLOR_SCALE[0].color;
+};
+
+const getRadius = (count) => {
+  if (count === 0) return 4;
+  if (count < 10) return 7;
+  if (count < 50) return 10;
+  if (count < 100) return 14;
+  if (count < 300) return 18;
+  return 22;
+};
+
+const getBorderColor = (count) => {
+  if (count === 0) return '#94a3b8';
+  if (count < 50) return '#2563eb';
+  if (count < 100) return '#d97706';
+  return '#dc2626';
+};
+
+const AlgerMap = ({ data, maptitle, cardtitle }) => {
+  // Compute a stable key from data so GeoJSON re-renders on every update
+  const dataKey = useMemo(() => JSON.stringify(data), [data]);
+
+  const geoData = useMemo(() => ({
     type: "FeatureCollection",
     features: WILAYA_DATA.map(wilaya => ({
       type: "Feature",
       properties: {
         name: wilaya.name,
-        visits: data[wilaya.name] || 0,
+        count: data[wilaya.name] || 0,
         wilayaId: wilaya.id
       },
       geometry: {
@@ -32,47 +57,103 @@ const AlgerMap = ({data,maptitle,cardtitle}) => {
         coordinates: [wilaya.longitude, wilaya.latitude]
       }
     }))
-  };
+  }), [data]);
 
-  const getColor = (visits) => {
-    for (let i = COLOR_SCALE.length - 1; i >= 0; i--) {
-      if (visits >= COLOR_SCALE[i].threshold) return COLOR_SCALE[i].color;
-    }
-    return COLOR_SCALE[0].color;
-  };
+  const maxCount = useMemo(() => {
+    const vals = Object.values(data);
+    return vals.length ? Math.max(...vals, 1) : 1;
+  }, [data]);
 
-  // Improved radius calculation to handle higher values
-  const getRadius = (visits) => {
-    // Logarithmic scaling for better visual distinction across wide ranges
-    if (visits === 0) return 4;
-    return 6 + Math.log(visits) * 4;
-  };
+  const totalCount = useMemo(() => {
+    return Object.values(data).reduce((s, v) => s + v, 0);
+  }, [data]);
 
   const pointToLayer = (feature, latlng) => {
-    const visits = feature.properties.visits;
+    const count = feature.properties.count;
     return L.circleMarker(latlng, {
-      radius: getRadius(visits),
-      fillColor: getColor(visits),
-      color: '#6d28d9',
-      weight: visits > 100 ? 2 : 1,
+      radius: getRadius(count),
+      fillColor: getColor(count),
+      color: getBorderColor(count),
+      weight: count > 50 ? 2.5 : 1.5,
       opacity: 1,
-      fillOpacity: 0.85,
-      className: `wilaya-marker wilaya-${feature.properties.wilayaId}`
+      fillOpacity: 0.8,
     });
   };
 
-  // Calculate max visits for scaling the progress bars in popups
-  const maxVisits = Math.max(...Object.values(data));
+  const onEachFeature = (feature, layer) => {
+    const count = feature.properties.count;
+    const pct = totalCount > 0 ? ((count / totalCount) * 100).toFixed(1) : '0.0';
+    const barWidth = Math.min(100, (count / maxCount) * 100);
+    const color = getColor(count);
+
+    layer.bindPopup(`
+      <div style="
+        padding: 14px;
+        font-family: 'Inter', -apple-system, sans-serif;
+        min-width: 220px;
+      ">
+        <div style="
+          display: flex;
+          align-items: center;
+          margin-bottom: 12px;
+          padding-bottom: 10px;
+          border-bottom: 2px solid ${color};
+        ">
+          <div style="
+            width: 14px; height: 14px;
+            background: ${color};
+            border-radius: 50%;
+            margin-right: 10px;
+            box-shadow: 0 0 6px ${color}80;
+          "></div>
+          <h3 style="margin:0; color:#1e293b; font-size:16px; font-weight:700;">
+            ${feature.properties.name}
+          </h3>
+        </div>
+        <div style="margin-bottom: 10px;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+            <span style="color:#64748b; font-size:13px;">${cardtitle}:</span>
+            <strong style="color:${color}; font-size:15px;">
+              ${count.toLocaleString()}
+            </strong>
+          </div>
+          <div style="
+            height: 8px;
+            background: #f1f5f9;
+            border-radius: 4px;
+            overflow: hidden;
+          ">
+            <div style="
+              width: ${barWidth}%;
+              height: 100%;
+              background: linear-gradient(90deg, ${color}, ${color}dd);
+              border-radius: 4px;
+              transition: width 0.3s ease;
+            "></div>
+          </div>
+          <div style="text-align:right; font-size:11px; color:#94a3b8; margin-top:3px;">
+            ${pct}% of total
+          </div>
+        </div>
+      </div>
+    `);
+
+    // Show tooltip on hover with name + count
+    layer.bindTooltip(
+      `<strong>${feature.properties.name}</strong>: ${count.toLocaleString()}`,
+      { direction: 'top', offset: [0, -8], className: 'wilaya-tooltip' }
+    );
+  };
 
   return (
     <Box sx={{ 
-      height: '90vh', 
+      height: '85vh', 
       width: '100%',
       position: 'relative',
-      borderRadius: '12px',
+      borderRadius: '16px',
       overflow: 'hidden',
-      boxShadow: 3,
-      border: '1px solid rgba(139, 92, 246, 0.15)'
+      boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
+      border: '1px solid #e2e8f0',
     }}>
       <MapContainer 
         center={[28, 3]}
@@ -84,222 +165,103 @@ const AlgerMap = ({data,maptitle,cardtitle}) => {
         zoomControl={false}
         attributionControl={false}
       >
-        {/* Light-themed base map for better contrast with markers */}
         <TileLayer
           url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          attribution='&copy; OpenStreetMap contributors'
         />
         
-        {/* Highlight layer for Algeria borders */}
+        {/* Key forces re-render when data changes */}
         <GeoJSON
-          data={{
-            type: "Feature",
-            properties: {},
-            geometry: {
-              type: "Polygon",
-              coordinates: [[
-                // Simplified Algeria boundary coordinates
-                [-8.684, 35.225], [11.999, 35.225], 
-                [11.999, 18.995], [-8.684, 18.995], 
-                [-8.684, 35.225]
-              ]]
-            }
-          }}
-          style={{
-            fill: false,
-            color: 'rgba(139, 92, 246, 0.15)',
-            weight: 2,
-            dashArray: '5, 5'
-          }}
-        />
-        
-        {/* Wilaya markers */}
-        <GeoJSON
+          key={dataKey}
           data={geoData}
           pointToLayer={pointToLayer}
-          onEachFeature={(feature, layer) => {
-            const visits = feature.properties.visits;
-            layer.bindPopup(`
-              <div style="
-                padding: 12px; 
-                font-family: 'Inter', sans-serif; 
-                min-width: 200px;
-                border-radius: 8px;
-              ">
-                <div style="
-                  display: flex;
-                  align-items: center;
-                  margin-bottom: 10px;
-                  padding-bottom: 8px;
-                  border-bottom: 1px solid rgba(139, 92, 246, 0.2);
-                ">
-                  <div style="
-                    width: 12px;
-                    height: 12px;
-                    background-color: ${getColor(visits)};
-                    border-radius: 50%;
-                    margin-right: 10px;
-                    border: 1px solid #6d28d9;
-                  "></div>
-                  <h3 style="
-                    margin: 0;
-                    color: #6d28d9;
-                    font-size: 16px;
-                    font-weight: 600;
-                  ">
-                    ${feature.properties.name}
-                  </h3>
-                </div>
-                <div style="margin-bottom: 8px;">
-                  <div style="
-                    display: flex;
-                    justify-content: space-between;
-                    margin-bottom: 4px;
-                  ">
-                    <span style="color: #666;">${cardtitle}s:</span>
-                    <strong style="color: ${getColor(visits)};">
-                      ${visits.toLocaleString()}
-                    </strong>
-                  </div>
-                  <div style="
-                    height: 6px;
-                    background: rgba(139, 92, 246, 0.1);
-                    border-radius: 3px;
-                    margin-top: 4px;
-                    overflow: hidden;
-                  ">
-                    <div style="
-                      width: ${Math.min(100, (visits / maxVisits) * 100)}%;
-                      height: 100%;
-                      background: ${getColor(visits)};
-                      border-radius: 3px;
-                    "></div>
-                  </div>
-                </div>
-                <div style="
-                  display: grid;
-                  grid-template-columns: 1fr 1fr;
-                  gap: 8px;
-                  font-size: 12px;
-                  color: #666;
-                  margin-top: 10px;
-                ">
-                  <div>
-                    <div style="font-weight: 500; margin-bottom: 2px;">Latitude</div>
-                    <div>${feature.geometry.coordinates[1].toFixed(4)}</div>
-                  </div>
-                  <div>
-                    <div style="font-weight: 500; margin-bottom: 2px;">Longitude</div>
-                    <div>${feature.geometry.coordinates[0].toFixed(4)}</div>
-                  </div>
-                </div>
-              </div>
-            `);
-          }}
+          onEachFeature={onEachFeature}
         />
         
         <ScaleControl position="bottomleft" imperial={false} />
         <ZoomControl position="topright" />
         
-        {/* Enhanced Legend */}
+        {/* Legend */}
         <div className="leaflet-bottom leaflet-right">
-          <div className="leaflet-control leaflet-bar" style={{
-            padding: '16px',
-            background: 'rgba(255, 255, 255, 0.95)',
+          <div className="leaflet-control" style={{
+            padding: '14px 16px',
+            background: 'rgba(255, 255, 255, 0.96)',
             borderRadius: '12px',
-            boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-            maxWidth: '220px',
-            backdropFilter: 'blur(4px)',
-            border: '1px solid rgba(0,0,0,0.05)'
+            boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+            maxWidth: '200px',
+            backdropFilter: 'blur(8px)',
+            border: '1px solid #e2e8f0',
           }}>
-            <Typography variant="subtitle2" sx={{ 
-              marginBottom: '12px',
-              color: '#6d28d9',
-              fontWeight: '600',
-              fontSize: '14px'
+            <div style={{ 
+              fontSize: '13px', 
+              fontWeight: 700, 
+              color: '#1e293b', 
+              marginBottom: '10px',
+              paddingBottom: '6px',
+              borderBottom: '2px solid #8b5cf6',
             }}>
               {cardtitle} Distribution
-            </Typography>
-            {COLOR_SCALE.map((item, index) => (
-              <div key={index} style={{ 
+            </div>
+            {COLOR_SCALE.map((item, i) => (
+              <div key={i} style={{ 
                 display: 'flex', 
                 alignItems: 'center',
-                marginBottom: '6px'
+                marginBottom: '5px',
               }}>
                 <div style={{
-                  width: '16px',
-                  height: '16px',
-                  borderRadius: '4px',
-                  marginRight: '10px',
+                  width: '14px',
+                  height: '14px',
+                  borderRadius: '3px',
+                  marginRight: '8px',
                   backgroundColor: item.color,
-                  border: '1px solid rgba(0,0,0,0.1)'
+                  border: '1px solid rgba(0,0,0,0.08)',
+                  flexShrink: 0,
                 }}></div>
                 <span style={{
-                  fontSize: '13px',
-                  fontWeight: '500',
-                  color: '#333'
+                  fontSize: '12px',
+                  fontWeight: 500,
+                  color: '#475569',
                 }}>{item.label}</span>
               </div>
             ))}
-            <div style={{ 
-              marginTop: '12px',
-              fontSize: '12px',
-              color: '#666',
-              lineHeight: '1.4'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                <div style={{
-                  width: '8px',
-                  height: '8px',
-                  borderRadius: '50%',
-                  marginRight: '8px',
-                  background: 'transparent',
-                  border: '1px solid #6d28d9'
-                }}></div>
-                <span>Circle size represents {cardtitle} count</span>
-              </div>
-            </div>
           </div>
         </div>
       </MapContainer>
       
-      {/* Title */}
+      {/* Title Badge */}
       <Box sx={{
         position: 'absolute',
-        top: '20px',
+        top: 16,
         left: '50%',
         transform: 'translateX(-50%)',
         zIndex: 1000,
-        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-        padding: '12px 24px',
-        borderRadius: '30px',
-        boxShadow: 3,
-        textAlign: 'center',
-        backdropFilter: 'blur(2px)',
-        border: '1px solid rgba(139, 92, 246, 0.2)'
+        backgroundColor: 'rgba(255, 255, 255, 0.96)',
+        padding: '10px 24px',
+        borderRadius: '24px',
+        boxShadow: '0 2px 12px rgba(0,0,0,0.1)',
+        backdropFilter: 'blur(8px)',
+        border: '1px solid #e2e8f0',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
       }}>
-        <Typography variant="h6" sx={{ 
-          color: '#6d28d9',
-          fontWeight: '700',
-          fontSize: '1.1rem'
+        <Typography sx={{ 
+          color: '#1e293b',
+          fontWeight: 700,
+          fontSize: '0.95rem',
         }}>
           {maptitle}
         </Typography>
-      </Box>
-      
-      {/* Data source attribution */}
-      <Box sx={{
-        position: 'absolute',
-        bottom: '10px',
-        left: '10px',
-        zIndex: 1000,
-        backgroundColor: 'rgba(255, 255, 255, 0.8)',
-        padding: '4px 8px',
-        borderRadius: '4px',
-        fontSize: '11px',
-        color: '#666'
-      }}>
-        Data updated: {new Date().toLocaleDateString()}
+        <Typography sx={{
+          backgroundColor: '#8b5cf6',
+          color: '#fff',
+          fontSize: '0.75rem',
+          fontWeight: 600,
+          padding: '2px 10px',
+          borderRadius: '12px',
+        }}>
+          {totalCount.toLocaleString()}
+        </Typography>
       </Box>
     </Box>
   );

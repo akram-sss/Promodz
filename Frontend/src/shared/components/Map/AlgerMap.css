@@ -1,31 +1,26 @@
 /* Fix for Leaflet's default CSS issues */
 .leaflet-container {
-  background: #fff;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  background: #f8fafc;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .wilaya-tooltip {
-  font-weight: bold;
-  font-size: 14px;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid #ccc;
-  border-radius: 3px;
-  padding: 2px 5px;
+  font-weight: 600;
+  font-size: 13px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 6px 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  color: #1e293b;
 }
 
-.wilaya-popup h3 {
-  margin-top: 0;
-  color: #333;
-  font-size: 16px;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 5px;
+.leaflet-popup-content-wrapper {
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  border: 1px solid #e2e8f0;
 }
 
-.wilaya-popup p {
-  margin: 5px 0;
-  font-size: 14px;
-}
-
-.wilaya-popup p strong {
-  color: #555;
+.leaflet-popup-tip {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
