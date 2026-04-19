@@ -18,6 +18,10 @@ jobs:
           script: |
             cd /var/www/Promodz
             
+            git reset --hard
+            git clean -fd -e promodz_backend/.env -e Frontend/.env
+            git pull origin main
+
             # 1. Mark directory as safe for Git
             git config --global --add safe.directory /var/www/Promodz
 
