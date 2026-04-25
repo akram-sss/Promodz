@@ -659,6 +659,123 @@ export const getMySubscription = async (req, res) => {
   }
 };
 
+// Company requests subscription renewal — emails all super admins
+export const requestRenewal = async (req, res) => {
+  try {
+    const companyId = req.user.id;
+
+    // Get company info + subscription
+    const company = await prisma.user.findUnique({
+      where: { id: companyId },
+      select: { id: true, email: true, fullName: true, companyName: true, username: true },
+    });
+    if (!company) {
+      return res.status(404).json({ error: "Company not found." });
+    }
+
+    const subscription = await prisma.subscription.findUnique({
+      where: { companyId },
+    });
+
+    // Get all super-admin emails
+    const superAdmins = await prisma.user.findMany({
+      where: { role: "SUPER_ADMIN" },
+      select: { email: true },
+    });
+    const adminEmails = superAdmins.map((a) => a.email).filter(Boolean);
+    if (adminEmails.length === 0) {
+      return res.status(500).json({ error: "No administrators available to notify." });
+    }
+
+    const companyName = company.companyName || company.fullName || company.username || "Unknown";
+    const planName = subscription?.plan || "N/A";
+    const endDate = subscription?.endDate
+      ? new Date(subscription.endDate).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
+      : "N/A";
+    const isExpired = subscription?.endDate ? subscription.endDate < new Date() : false;
+
+    const html = `
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 32px; background: #ffffff; border-radius: 12px; border: 1px solid #e5e7eb;">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <div style="display: inline-block; background: #7C3AED; border-radius: 12px; padding: 12px 16px;">
+            <span style="color: #fff; font-size: 24px; font-weight: bold;">Promodz</span>
+          </div>
+        </div>
+        <h2 style="color: #1a1a1a; text-align: center; margin-bottom: 8px;">Renewal Request</h2>
+        <p style="color: #666; text-align: center; margin-bottom: 24px;">
+          A company is requesting subscription ${isExpired ? "renewal" : "extension"}.
+        </p>
+        <div style="background: #faf5ff; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #374151;">
+            <tr>
+              <td style="padding: 8px 0; font-weight: 600;">Company:</td>
+              <td style="padding: 8px 0;">${companyName}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; font-weight: 600;">Email:</td>
+              <td style="padding: 8px 0;">${company.email || "N/A"}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; font-weight: 600;">Current Plan:</td>
+              <td style="padding: 8px 0;">${planName}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; font-weight: 600;">End Date:</td>
+              <td style="padding: 8px 0;">${endDate}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; font-weight: 600;">Status:</td>
+              <td style="padding: 8px 0; color: ${isExpired ? "#dc2626" : "#d97706"}; font-weight: 700;">
+                ${isExpired ? "EXPIRED" : "Expiring Soon"}
+              </td>
+            </tr>
+          </table>
+        </div>
+        <p style="color: #6b7280; font-size: 13px; text-align: center;">
+          Please log in to the admin panel to renew or extend this company's subscription.
+        </p>
+        <p style="color: #9ca3af; font-size: 11px; text-align: center; margin-top: 16px;">
+          This is an automated request from Promodz.
+        </p>
+      </div>
+    `;
+
+    const nodemailer = await import("nodemailer");
+    const transporter = nodemailer.default.createTransport({
+      host: process.env.SMTP_HOST || "smtp.gmail.com",
+      port: parseInt(process.env.SMTP_PORT || "587"),
+      secure: false,
+      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+    });
+
+    const subject = `🔔 Subscription ${isExpired ? "Renewal" : "Extension"} Request — ${companyName}`;
+    let sent = 0;
+    for (const to of adminEmails) {
+      try {
+        await transporter.sendMail({
+          from: `"Promodz Alerts" <${process.env.SMTP_USER}>`,
+          to,
+          subject,
+          html,
+        });
+        sent++;
+      } catch (e) {
+        console.error(`  Failed to send renewal request to ${to}:`, e.message);
+      }
+    }
+
+    if (sent === 0) {
+      return res.status(500).json({ error: "Failed to send notification emails." });
+    }
+
+    console.log(`📧 Renewal request sent by ${companyName} → ${sent} admin(s)`);
+    res.json({ message: "Renewal request sent to administrators." });
+  } catch (error) {
+    console.error("Request renewal error:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 // ===================== UTILITY FUNCTIONS =====================
 
 // Check if company has active subscription (middleware helper)

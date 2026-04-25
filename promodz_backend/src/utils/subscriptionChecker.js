@@ -16,6 +16,7 @@ const transporter = nodemailer.createTransport({
 
 // ── Constants ──
 const WARNING_DAYS = 3; // Start warning when <= 3 days remain
+const MAX_POST_EXPIRY_DAYS = 1; // Keep sending post-expiry reminders for up to 1 day
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 /**
@@ -94,6 +95,7 @@ async function sendWarningEmail(recipients, emailData) {
       ? `🔴 Subscription expires TODAY – ${companyName}`
       : `⚠️ Subscription expiring in ${daysLeft} day(s) – ${companyName}`;
 
+  let sent = 0;
   for (const to of recipients) {
     try {
       await transporter.sendMail({
@@ -102,77 +104,122 @@ async function sendWarningEmail(recipients, emailData) {
         subject,
         html,
       });
+      sent++;
+      console.log(`  ✉️  Email sent → ${to}`);
     } catch (err) {
-      console.error(`  ✉️ Failed to send to ${to}:`, err.message);
+      console.error(`  ✉️  Failed to send to ${to}:`, err.message);
     }
   }
+  return sent;
 }
 
 /**
- * Core check: query all subscriptions that are within the warning window
- * (endDate - now <= 3 days, including already-expired ones).
+ * Core check: runs in two passes —
+ *  1. Pre-expiry warnings  : subscriptions ending within WARNING_DAYS (status ACTIVE)
+ *  2. Post-expiry reminders: subscriptions already expired up to MAX_POST_EXPIRY_DAYS ago
+ *     (status ACTIVE or EXPIRED — covers cases where the status was never updated)
  */
 export async function checkSubscriptions() {
   console.log(`\n🔍 [SubscriptionChecker] Running at ${new Date().toISOString()}`);
 
   try {
-    // 1. Fetch all non-cancelled subscriptions with their company info
-    const subscriptions = await prisma.subscription.findMany({
-      where: {
-        status: { not: "CANCELLED" },
-      },
-      include: {
-        company: {
-          select: {
-            id: true,
-            email: true,
-            fullName: true,
-            companyName: true,
-            username: true,
-          },
-        },
-      },
-    });
+    const now = new Date();
 
-    // 2. Get all super-admins
+    // ── Step 1: Promote ACTIVE subscriptions past their endDate to EXPIRED ──
+    const promoted = await prisma.subscription.updateMany({
+      where: {
+        status: "ACTIVE",
+        endDate: { lt: now },
+      },
+      data: { status: "EXPIRED" },
+    });
+    if (promoted.count > 0) {
+      console.log(`  🔄 Marked ${promoted.count} subscription(s) as EXPIRED`);
+    }
+
+    // ── Step 2: Get super-admin emails ──
     const superAdmins = await prisma.user.findMany({
       where: { role: "SUPER_ADMIN" },
       select: { email: true },
     });
     const adminEmails = superAdmins.map((a) => a.email).filter(Boolean);
-
     if (adminEmails.length === 0) {
-      console.warn("  ⚠️ No SUPER_ADMIN emails found — skipping admin notifications.");
+      console.warn("  ⚠️ No SUPER_ADMIN emails found — admin won't receive alerts.");
     }
 
-    const now = new Date();
+    // ── Step 3: Pre-expiry warnings (ACTIVE, ending within WARNING_DAYS) ──
+    const warningCutoff = new Date(now.getTime() + WARNING_DAYS * MS_PER_DAY);
+    const warningSubs = await prisma.subscription.findMany({
+      where: {
+        status: "ACTIVE",
+        endDate: { lte: warningCutoff },
+      },
+      include: {
+        company: {
+          select: { id: true, email: true, fullName: true, companyName: true, username: true },
+        },
+      },
+    });
+
+    // ── Step 4: Post-expiry reminders (EXPIRED, within MAX_POST_EXPIRY_DAYS) ──
+    const expiryCutoff = new Date(now.getTime() - MAX_POST_EXPIRY_DAYS * MS_PER_DAY);
+    const expiredSubs = await prisma.subscription.findMany({
+      where: {
+        status: "EXPIRED",
+        endDate: {
+          lt: now,
+          gte: expiryCutoff, // Only remind for up to MAX_POST_EXPIRY_DAYS after expiry
+        },
+      },
+      include: {
+        company: {
+          select: { id: true, email: true, fullName: true, companyName: true, username: true },
+        },
+      },
+    });
+
+    // Merge both lists, deduplicate by subscription id
+    const seen = new Set();
+    const allSubs = [];
+    for (const sub of [...warningSubs, ...expiredSubs]) {
+      if (!seen.has(sub.id)) {
+        seen.add(sub.id);
+        allSubs.push(sub);
+      }
+    }
+
+    console.log(
+      `  📊 ${warningSubs.length} pre-expiry warning(s), ${expiredSubs.length} post-expiry reminder(s)`
+    );
+
     let warned = 0;
 
-    for (const sub of subscriptions) {
+    for (const sub of allSubs) {
       const endDate = new Date(sub.endDate);
       const diffMs = endDate.getTime() - now.getTime();
       const daysLeft = Math.ceil(diffMs / MS_PER_DAY);
-
-      // Only warn if <= WARNING_DAYS remaining (includes negative = already expired)
-      if (daysLeft > WARNING_DAYS) continue;
 
       const companyName =
         sub.company?.companyName || sub.company?.fullName || sub.company?.username || "Unknown";
       const companyEmail = sub.company?.email;
 
+      const tag = daysLeft < 0 ? `${Math.abs(daysLeft)}d overdue` : `${daysLeft}d left`;
       console.log(
-        `  📋 ${companyName} — plan: ${sub.plan}, ends: ${endDate.toISOString().slice(0, 10)}, days left: ${daysLeft}`
+        `  📋 ${companyName} — plan: ${sub.plan}, ends: ${endDate.toISOString().slice(0, 10)}, ${tag}`
       );
 
-      // Build recipient list: all super-admins + the company itself
+      // Always notify: admins + the company
       const recipients = [...adminEmails];
       if (companyEmail && !recipients.includes(companyEmail)) {
         recipients.push(companyEmail);
       }
 
-      if (recipients.length === 0) continue;
+      if (recipients.length === 0) {
+        console.warn(`    ⚠️ No recipients for ${companyName} — skipping`);
+        continue;
+      }
 
-      await sendWarningEmail(recipients, {
+      const sent = await sendWarningEmail(recipients, {
         companyName,
         companyEmail: companyEmail || "N/A",
         planName: sub.plan,
@@ -180,11 +227,11 @@ export async function checkSubscriptions() {
         daysLeft,
       });
 
-      warned++;
+      if (sent > 0) warned++;
     }
 
     console.log(
-      `✅ [SubscriptionChecker] Done — ${subscriptions.length} subscriptions checked, ${warned} warning(s) sent.\n`
+      `✅ [SubscriptionChecker] Done — ${allSubs.length} checked, ${warned} notification(s) sent.\n`
     );
   } catch (error) {
     console.error("❌ [SubscriptionChecker] Error:", error);

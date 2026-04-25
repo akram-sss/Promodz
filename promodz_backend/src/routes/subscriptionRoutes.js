@@ -8,6 +8,7 @@ import {
   createInvoice,
   getMySubscription,
   updateSubscriptionDates,
+  requestRenewal,
 } from "../controllers/subscriptionController.js";
 import { authenticate } from "../middleware/auth.js";
 import { authorizeRoles } from "../middleware/authorize.js";
@@ -28,5 +29,6 @@ router.patch("/company/:companyId/dates", authenticate, authorizeRoles("SUPER_AD
 
 // ===================== COMPANY ROUTES =====================
 router.get("/my-subscription", authenticate, getMySubscription);
+router.post("/request-renewal", authenticate, authorizeRoles("ENTREPRISE"), requestRenewal);
 
 export default router;

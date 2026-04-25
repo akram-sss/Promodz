@@ -426,4 +426,8 @@ export const subscriptionAPI = {
   /** Update subscription dates only (moderator/admin) */
   updateDates: (companyId, data) =>
     api.patch(`/subscriptions/company/${companyId}/dates`, data),
+
+  /** Company requests renewal/extension — emails super admins */
+  requestRenewal: () =>
+    api.post('/subscriptions/request-renewal'),
 };

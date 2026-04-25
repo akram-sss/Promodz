@@ -67,12 +67,20 @@ export const createProduct = async (req, res) => {
       return res.status(403).json({ error: "Not authorized" });
     }
 
-    // Check if the company's subscription is active (not cancelled/paused)
+    // Check if the company's subscription allows write operations
     const subscription = await prisma.subscription.findUnique({
       where: { companyId },
     });
-    if (subscription && subscription.status === "CANCELLED") {
-      return res.status(403).json({ error: "This company is paused. Cannot add products." });
+    if (subscription) {
+      if (subscription.status === "CANCELLED") {
+        return res.status(403).json({ error: "This company is paused. Cannot add products." });
+      }
+      if (subscription.status === "EXPIRED" || (subscription.endDate && subscription.endDate < new Date())) {
+        return res.status(403).json({
+          error: "Subscription expired",
+          message: "Your subscription has expired. You can only view your products. Please renew to add new products.",
+        });
+      }
     }
 
     // ✅ Ensure category exists
@@ -610,11 +618,19 @@ export const deleteProduct = async (req, res) => {
       return res.status(404).json({ error: "Product not found" });
     }
 
-    // Check if company is paused
+    // Check if company is paused or expired
     if (req.user.role !== "SUPER_ADMIN") {
       const companySub = await prisma.subscription.findUnique({ where: { companyId: product.companyId } });
-      if (companySub && companySub.status === "CANCELLED") {
-        return res.status(403).json({ error: "This company is paused. Cannot delete products." });
+      if (companySub) {
+        if (companySub.status === "CANCELLED") {
+          return res.status(403).json({ error: "This company is paused. Cannot delete products." });
+        }
+        if (companySub.status === "EXPIRED" || (companySub.endDate && companySub.endDate < new Date())) {
+          return res.status(403).json({
+            error: "Subscription expired",
+            message: "Your subscription has expired. You can only view your products. Please renew to delete products.",
+          });
+        }
       }
     }
 
@@ -914,11 +930,19 @@ export const updateProductDetails = async (req, res) => {
       return res.status(404).json({ error: "Product not found" });
     }
 
-    // Check if company is paused
+    // Check if company is paused or expired
     if (req.user.role !== "SUPER_ADMIN") {
       const companySub = await prisma.subscription.findUnique({ where: { companyId: product.companyId } });
-      if (companySub && companySub.status === "CANCELLED") {
-        return res.status(403).json({ error: "This company is paused. Cannot edit products." });
+      if (companySub) {
+        if (companySub.status === "CANCELLED") {
+          return res.status(403).json({ error: "This company is paused. Cannot edit products." });
+        }
+        if (companySub.status === "EXPIRED" || (companySub.endDate && companySub.endDate < new Date())) {
+          return res.status(403).json({
+            error: "Subscription expired",
+            message: "Your subscription has expired. You can only view your products. Please renew to edit products.",
+          });
+        }
       }
     }
 

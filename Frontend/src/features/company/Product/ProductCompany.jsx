@@ -38,7 +38,7 @@ function ProductProps(index) {
   };
 }
 
-const ProductTabs = ({ userId }) => {
+const ProductTabs = ({ userId, isExpired }) => {
   const location = useLocation();
   // Determine active tab based on current route
   const getActiveTab = () => {
@@ -107,17 +107,17 @@ const ProductTabs = ({ userId }) => {
       </Box>
       
       {/* Render nested routes here */}
-      <Outlet context={{ userId }} />
+      <Outlet context={{ userId, isExpired }} />
     </Box>
   );
 };
 
 function ProductCompany() {
-  const { userId } = useOutletContext();
+  const { userId, isExpired } = useOutletContext();
 
   return (
     <div className="content">
-      <ProductTabs userId={userId} />
+      <ProductTabs userId={userId} isExpired={isExpired} />
     </div>
   );
 }

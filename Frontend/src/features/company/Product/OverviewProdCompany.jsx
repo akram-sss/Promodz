@@ -4,11 +4,17 @@ import OverviewCards from '../Components/cards/OverviewCards';
 import { companyAPI } from '@shared/api';
 import { useState, useEffect } from 'react';
 import { CircularProgress, Typography } from '@mui/material';
+import { useOutletContext } from 'react-router-dom';
 
 export default function OverviewProdCompany() {
   const [promotions, setPromotions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const permissions = { canEdit: true, canDelete: true, canAdd: true };
+  const { isExpired } = useOutletContext() || {};
+  const permissions = {
+    canEdit: !isExpired,
+    canDelete: !isExpired,
+    canAdd: !isExpired,
+  };
 
   useEffect(() => {
     const fetchProducts = async () => {

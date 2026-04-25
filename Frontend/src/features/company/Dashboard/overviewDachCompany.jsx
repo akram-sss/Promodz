@@ -37,7 +37,23 @@ const SectionTitle = styled(Typography)(({ theme }) => ({
 }));
 
 /* ── Subscription Plan Card ── */
-const SubscriptionPlanCard = ({ subscriptionPlan, subscribeStartedate, subscribeEnddate }) => {
+const SubscriptionPlanCard = ({ subscriptionPlan, subscribeStartedate, subscribeEnddate, onRequestRenewal }) => {
+  const [requesting, setRequesting] = useState(false);
+  const [requested, setRequested] = useState(false);
+  const [requestError, setRequestError] = useState(null);
+
+  const handleRequest = async () => {
+    setRequesting(true);
+    setRequestError(null);
+    try {
+      await onRequestRenewal();
+      setRequested(true);
+    } catch (e) {
+      setRequestError(e?.response?.data?.error || 'Failed to send request. Please try again.');
+    } finally {
+      setRequesting(false);
+    }
+  };
   const startDate = dayjs(subscribeStartedate);
   const endDate = dayjs(subscribeEnddate);
   const today = dayjs();
@@ -110,14 +126,41 @@ const SubscriptionPlanCard = ({ subscriptionPlan, subscribeStartedate, subscribe
         </Box>
       </Box>
       {(isExpired || isExpiringSoon) && (
-        <Button variant="contained" fullWidth sx={{
-          background: getPlanGradient(), color: '#fff', fontWeight: 600, py: 1.5,
-          borderRadius: '12px', textTransform: 'none',
-          boxShadow: `0 4px 14px ${subscriptionPlan?.color}40`,
-          '&:hover': { boxShadow: `0 6px 20px ${subscriptionPlan?.color}50` },
-        }}>
-          {isExpired ? 'Renew Subscription' : 'Extend Plan'}
-        </Button>
+        <>
+          {requested ? (
+            <Box sx={{
+              background: alpha('#10b981', 0.1), borderRadius: '12px', padding: '14px',
+              textAlign: 'center', border: '1px solid #10b981',
+            }}>
+              <Typography sx={{ color: '#10b981', fontWeight: 600, fontSize: '14px' }}>
+                ✅ Request sent! An administrator will contact you shortly.
+              </Typography>
+            </Box>
+          ) : (
+            <>
+              <Button
+                variant="contained"
+                fullWidth
+                disabled={requesting}
+                onClick={handleRequest}
+                sx={{
+                  background: getPlanGradient(), color: '#fff', fontWeight: 600, py: 1.5,
+                  borderRadius: '12px', textTransform: 'none',
+                  boxShadow: `0 4px 14px ${subscriptionPlan?.color}40`,
+                  '&:hover': { boxShadow: `0 6px 20px ${subscriptionPlan?.color}50` },
+                  '&:disabled': { opacity: 0.7 },
+                }}
+              >
+                {requesting ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : (isExpired ? 'Renew Subscription' : 'Extend Plan')}
+              </Button>
+              {requestError && (
+                <Typography sx={{ color: '#ef4444', fontSize: '12px', mt: 1, textAlign: 'center' }}>
+                  {requestError}
+                </Typography>
+              )}
+            </>
+          )}
+        </>
       )}
     </Box>
   );
@@ -439,6 +482,7 @@ export default function OverviewDachAdmin() {
           subscriptionPlan={subscriptionPlan}
           subscribeStartedate={subscribeStartedate}
           subscribeEnddate={subscribeEnddate}
+          onRequestRenewal={() => subscriptionAPI.requestRenewal()}
         />
       )}
 
