@@ -353,6 +353,13 @@ export const getAllUsers = async (req, res) => {
       companyName: true,
       city: true,
       country: true,
+      subscription: {
+        select: {
+          plan: true,
+          status: true,
+          endDate: true,
+        },
+      },
     };
 
     if (requestingUser.role === "SUPER_ADMIN") {

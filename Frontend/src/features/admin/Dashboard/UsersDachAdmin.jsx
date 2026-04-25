@@ -288,6 +288,54 @@ const UserList = ({ activeTab, currentUser, allUsers, assignedCompanies, onUserC
                           'default'
                       }} 
                     />
+                    {activeTab === 'Companies' && user.subscription && (() => {
+                      const plan = user.subscription.plan;
+                      const status = user.subscription.status;
+                      const isExpired = user.subscription.endDate && new Date(user.subscription.endDate) < new Date();
+                      const planColors = {
+                        ENTERPRISE: { bg: '#FFF8E1', color: '#FF8C00', border: '#FFD700' },
+                        PREMIUM:    { bg: '#F8F8F8', color: '#888', border: '#C0C0C0' },
+                        BASIC:      { bg: '#FFF3E0', color: '#A0522D', border: '#CD7F32' },
+                        FREE:       { bg: '#F3F4F6', color: '#6B7280', border: '#9CA3AF' },
+                      };
+                      const planIcons = { ENTERPRISE: '👑', PREMIUM: '🥈', BASIC: '🥉', FREE: '📦' };
+                      const cfg = planColors[plan?.toUpperCase()] || planColors.FREE;
+                      const icon = planIcons[plan?.toUpperCase()] || '📦';
+                      const effectiveStatus = isExpired ? 'EXPIRED' : status;
+                      const statusColors = { ACTIVE: '#10b981', EXPIRED: '#ef4444', CANCELLED: '#6b7280', PENDING: '#f59e0b' };
+                      return (
+                        <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, mt: 0.5, ml: 0.5 }}>
+                          <Chip
+                            label={`${icon} ${plan || 'No Plan'}`}
+                            size="small"
+                            sx={{
+                              backgroundColor: cfg.bg,
+                              color: cfg.color,
+                              border: `1px solid ${cfg.border}`,
+                              fontWeight: 700,
+                              fontSize: '11px',
+                            }}
+                          />
+                          <Chip
+                            label={effectiveStatus}
+                            size="small"
+                            sx={{
+                              backgroundColor: `${statusColors[effectiveStatus] || '#6b7280'}18`,
+                              color: statusColors[effectiveStatus] || '#6b7280',
+                              fontWeight: 600,
+                              fontSize: '10px',
+                            }}
+                          />
+                        </Box>
+                      );
+                    })()}
+                    {activeTab === 'Companies' && !user.subscription && (
+                      <Chip
+                        label="No Subscription"
+                        size="small"
+                        sx={{ mt: 0.5, ml: 0.5, backgroundColor: '#f3f4f6', color: '#9ca3af', fontSize: '11px' }}
+                      />
+                    )}
                   </Box>
                 </Box>
                 <Box display="flex" gap={1}>
