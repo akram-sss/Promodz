@@ -593,6 +593,11 @@ export const updateSubscriptionDates = async (req, res) => {
       }
     }
 
+    // Auto-restore ACTIVE when endDate is extended to the future (unless caller explicitly set a status)
+    if (!status && updateData.endDate && updateData.endDate > new Date() && subscription.status === "EXPIRED") {
+      updateData.status = "ACTIVE";
+    }
+
     const updatedSubscription = await prisma.subscription.update({
       where: { companyId },
       data: updateData,
